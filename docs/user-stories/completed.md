@@ -75,3 +75,22 @@ A signed-in user files spending under categories they create, and under subcateg
 - An empty name, a duplicate category name for that user, or a duplicate subcategory name inside the same category is shown on the form and is not saved.
 - They can delete one of their subcategories. The X removes that subcategory only.
 
+## Module: Expense Types
+
+The acronym a later expense will show as Tipo, and the description of what that acronym means.
+
+<a id="us-typ-01"></a>
+
+### US-TYP-01 — Create an expense type
+
+**Status:** Done
+
+**Story:** As a signed-in user, I want an Expense Types area where I can create a type with an acronym and a description, so that later an expense can use that acronym as its Tipo.
+
+**Acceptance:**
+
+- A signed-in, verified user can open Expense Types from the main navigation.
+- They can create a type with an acronym and a description, and it appears in their list.
+- A guest who opens Expense Types is redirected to login.
+- An empty acronym, an empty description, or an acronym that user already has is shown on the form and is not saved.
+

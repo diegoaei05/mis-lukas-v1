@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ExpenseTypeController;
 use App\Http\Controllers\SubcategoryController;
 use Illuminate\Support\Facades\Route;
 
@@ -10,6 +11,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
 
     Route::resource('categories', CategoryController::class)->only(['index', 'store']);
+    Route::resource('expense-types', ExpenseTypeController::class)->only(['index', 'store']);
     Route::post('categories/{category}/subcategories', [SubcategoryController::class, 'store'])
         ->name('categories.subcategories.store');
     Route::delete('categories/{category}/subcategories/{subcategory}', [SubcategoryController::class, 'destroy'])

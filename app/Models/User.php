@@ -56,4 +56,12 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     {
         return $this->hasMany(Category::class);
     }
+
+    /**
+     * Get the expense types that belong to the user.
+     */
+    public function expenseTypes(): HasMany
+    {
+        return $this->hasMany(ExpenseType::class);
+    }
 }

@@ -29,7 +29,10 @@ Each new file contains: **ID**, **Status** (`Needs confirmation`, `Agreed`, or `
 | [US-ACC-02](user-stories/completed.md#us-acc-02) | A visitor can submit name, email, and password and get an account. | Done   |
 | [US-ACC-03](user-stories/completed.md#us-acc-03) | Invalid registration input stays on the form with field errors.    | Done   |
 | [US-CAT-01](user-stories/completed.md#us-cat-01) | A signed-in user can create a category and add subcategories that belong to it. | Done |
+| [US-TYP-01](user-stories/completed.md#us-typ-01) | A signed-in user can create an expense type with an acronym and a description. | Done |
 
 ## New
 
-No new stories yet.
+| ID | Summary | Status |
+| --- | --- | --- |
+| [US-EXP-01](user-stories/new/US-EXP-01-record-an-expense.md) | A signed-in user can record an expense and see it in a table like the spreadsheet. | Needs confirmation |

@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Menu, Search, Tags } from 'lucide-react';
+import { BookOpen, CreditCard, Folder, LayoutGrid, Menu, Search, Tags } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
@@ -34,6 +34,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn, toUrl } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import { index as categories } from '@/routes/categories';
+import { index as expenseTypes } from '@/routes/expense-types';
 import type { BreadcrumbItem, NavItem } from '@/types';
 
 type Props = {
@@ -50,6 +51,11 @@ const mainNavItems: NavItem[] = [
         title: 'Categories',
         href: categories(),
         icon: Tags,
+    },
+    {
+        title: 'Expense Types',
+        href: expenseTypes(),
+        icon: CreditCard,
     },
 ];
 
