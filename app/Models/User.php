@@ -36,6 +36,16 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
     /**
+     * Remove expenses before the user row, so restricted expense types and subcategories can cascade.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (User $user): void {
+            $user->expenses()->delete();
+        });
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -63,5 +73,13 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function expenseTypes(): HasMany
     {
         return $this->hasMany(ExpenseType::class);
+    }
+
+    /**
+     * Get the expenses recorded by the user.
+     */
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(Expense::class);
     }
 }

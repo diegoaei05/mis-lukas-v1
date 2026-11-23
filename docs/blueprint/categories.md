@@ -37,6 +37,7 @@ POST /categories/{category}/subcategories
 DELETE /categories/{category}/subcategories/{subcategory}
   the subcategory must belong to the category in the URL, or the response is 404
   SubcategoryPolicy: another user's subcategory is a 404
+  a subcategory that still has expenses is kept, and the page flashes an error
   DELETE FROM subcategories
 ```
 

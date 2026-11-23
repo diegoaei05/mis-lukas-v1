@@ -30,6 +30,15 @@ class SubcategoryController extends Controller
     {
         Gate::authorize('delete', $subcategory);
 
+        if ($subcategory->expenses()->exists()) {
+            Inertia::flash('toast', [
+                'type' => 'error',
+                'message' => __('This subcategory has expenses and cannot be deleted.'),
+            ]);
+
+            return to_route('categories.index', ['category' => $category->id]);
+        }
+
         $subcategory->delete();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Subcategory deleted.')]);

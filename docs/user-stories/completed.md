@@ -73,7 +73,7 @@ A signed-in user files spending under categories they create, and under subcateg
 - A subcategory cannot be created without a category, and it cannot be attached to another user's category.
 - A guest who opens Categories is redirected to login.
 - An empty name, a duplicate category name for that user, or a duplicate subcategory name inside the same category is shown on the form and is not saved.
-- They can delete one of their subcategories. The X removes that subcategory only.
+- They can delete one of their subcategories when it has no expenses. The X removes that subcategory only.
 
 ## Module: Expense Types
 
@@ -93,4 +93,24 @@ The acronym a later expense will show as Tipo, and the description of what that 
 - They can create a type with an acronym and a description, and it appears in their list.
 - A guest who opens Expense Types is redirected to login.
 - An empty acronym, an empty description, or an acronym that user already has is shown on the form and is not saved.
+
+## Module: Expenses
+
+A signed-in user records a purchase and sees it in a table with the same columns as the spreadsheet.
+
+<a id="us-exp-01"></a>
+
+### US-EXP-01 — Record an expense
+
+**Status:** Done
+
+**Story:** As a signed-in user, I want an Expenses area where I can record a purchase and see my purchases in a table like the spreadsheet, so that each one keeps its month, type, concept, category, subcategory, and the amount I paid in soles or in dollars.
+
+**Acceptance:**
+
+- A signed-in, verified user can open Expenses from the main navigation.
+- They can record an expense with a month, a year, one of their expense types, a concept, one of their categories, a subcategory of that category, and an amount in soles or in dollars.
+- The new row appears in their table. The amount shows under Soles or under Dólares, and the other currency column is empty.
+- A guest who opens Expenses is redirected to login.
+- An empty concept, a missing amount, an amount in both currencies, a subcategory that does not belong to the chosen category, another user's subcategory, or another user's expense type is shown as an error and is not saved.
 
