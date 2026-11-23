@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, CreditCard, Folder, LayoutGrid, Menu, Receipt, Search, Tags } from 'lucide-react';
+import { BookOpen, CalendarCheck, CreditCard, Folder, LayoutGrid, Menu, Receipt, Search, Tags } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
@@ -36,6 +36,7 @@ import { dashboard } from '@/routes';
 import { index as categories } from '@/routes/categories';
 import { index as expenseTypes } from '@/routes/expense-types';
 import { index as expenses } from '@/routes/expenses';
+import { index as fixedExpenses } from '@/routes/fixed-expenses';
 import type { BreadcrumbItem, NavItem } from '@/types';
 
 type Props = {
@@ -62,6 +63,11 @@ const mainNavItems: NavItem[] = [
         title: 'Expenses',
         href: expenses(),
         icon: Receipt,
+    },
+    {
+        title: 'Fixed expenses',
+        href: fixedExpenses(),
+        icon: CalendarCheck,
     },
 ];
 

@@ -39,4 +39,12 @@ class ExpenseType extends Model
     {
         return $this->hasMany(Expense::class);
     }
+
+    /**
+     * Get the fixed expenses that use this type.
+     */
+    public function fixedExpenses(): HasMany
+    {
+        return $this->hasMany(FixedExpense::class);
+    }
 }

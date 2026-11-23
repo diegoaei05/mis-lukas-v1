@@ -60,3 +60,4 @@ Registration is the exception that uses Fortify’s controller. Application scre
 | [Categories](blueprint/categories.md) | A signed-in user picks a category, then adds or deletes its subcategories. |
 | [Expense Types](blueprint/expense-types.md) | A signed-in user creates an acronym and a description for each Tipo. |
 | [Expenses](blueprint/expenses.md) | A signed-in user records a purchase and sees it in the spreadsheet table. |
+| [Fixed expenses](blueprint/fixed-expenses.md) | A signed-in user describes a recurring bill once and marks a month paid. |

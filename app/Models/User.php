@@ -42,6 +42,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     {
         static::deleting(function (User $user): void {
             $user->expenses()->delete();
+            $user->fixedExpenses()->delete();
         });
     }
 
@@ -81,5 +82,13 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function expenses(): HasMany
     {
         return $this->hasMany(Expense::class);
+    }
+
+    /**
+     * Get the fixed expenses that belong to the user.
+     */
+    public function fixedExpenses(): HasMany
+    {
+        return $this->hasMany(FixedExpense::class);
     }
 }

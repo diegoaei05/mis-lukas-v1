@@ -38,4 +38,12 @@ class Subcategory extends Model
     {
         return $this->hasMany(Expense::class);
     }
+
+    /**
+     * Get the fixed expenses filed under this subcategory.
+     */
+    public function fixedExpenses(): HasMany
+    {
+        return $this->hasMany(FixedExpense::class);
+    }
 }

@@ -30,7 +30,7 @@ class SubcategoryController extends Controller
     {
         Gate::authorize('delete', $subcategory);
 
-        if ($subcategory->expenses()->exists()) {
+        if ($subcategory->expenses()->exists() || $subcategory->fixedExpenses()->exists()) {
             Inertia::flash('toast', [
                 'type' => 'error',
                 'message' => __('This subcategory has expenses and cannot be deleted.'),

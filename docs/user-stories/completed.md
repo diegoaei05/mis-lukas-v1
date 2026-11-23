@@ -114,3 +114,24 @@ A signed-in user records a purchase and sees it in a table with the same columns
 - A guest who opens Expenses is redirected to login.
 - An empty concept, a missing amount, an amount in both currencies, a subcategory that does not belong to the chosen category, another user's subcategory, or another user's expense type is shown as an error and is not saved.
 
+## Module: Fixed expenses
+
+A recurring bill, described once, and marked paid for the month being viewed.
+
+<a id="us-fix-01"></a>
+
+### US-FIX-01 — Record a fixed expense
+
+**Status:** Done
+
+**Story:** As a signed-in user, I want a Fixed expenses area where I can describe a recurring bill once and mark it paid for a chosen month, so that Luz, Netflix, or AWS stay out of the variable expenses table and I can see what I still owe this month.
+
+**Acceptance:**
+
+- A signed-in, verified user can open Fixed expenses from the main navigation.
+- They can create a bill with a name, one of their expense types, one of their categories, a subcategory of that category, a currency, and a usual amount. The bill appears in every month.
+- For a chosen month and year, the table shows their bills. The usual amount shows under Soles or under Dólares.
+- They can mark one of those bills paid for that month, with the usual amount or a different amount, and they can clear that paid mark.
+- A guest who opens Fixed expenses is redirected to login.
+- An empty name, a name that user already has, a missing amount, a subcategory that does not belong to the chosen category, another user's subcategory, or another user's expense type is shown as an error and is not saved.
+
