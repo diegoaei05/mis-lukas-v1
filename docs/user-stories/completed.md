@@ -52,3 +52,26 @@ Registration, sign-in, and the signed-in user. This module came with the Laravel
 - Failed validation redirects back to the registration page with Inertia errors for the invalid fields.
 - Password and password confirmation are cleared after a successful submit. They are not left filled when validation fails and the user retries.
 - The submit control is disabled while the request is in progress.
+
+## Module: Categories
+
+A signed-in user files spending under categories they create, and under subcategories that belong to those categories.
+
+<a id="us-cat-01"></a>
+
+### US-CAT-01 — Create a category and its subcategories
+
+**Status:** Done
+
+**Story:** As a signed-in user, I want a Categories area where I can create a category and then create subcategories that belong to that category, so that later expenses can be filed the way a yogurt purchase is filed under Food and Super/Market.
+
+**Acceptance:**
+
+- A signed-in, verified user can open Categories from the main navigation.
+- They can create a category by name, and it appears in their list.
+- They can create a subcategory by name on one of their categories, and it appears under that category only.
+- A subcategory cannot be created without a category, and it cannot be attached to another user's category.
+- A guest who opens Categories is redirected to login.
+- An empty name, a duplicate category name for that user, or a duplicate subcategory name inside the same category is shown on the form and is not saved.
+- They can delete one of their subcategories. The X removes that subcategory only.
+

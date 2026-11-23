@@ -7,7 +7,7 @@ Index of what this app must do. A feature is finished only when every acceptance
 - [Completed](user-stories/completed.md) — behavior already in the app. Story and acceptance only.
 - [New](user-stories/new/) — one file per story still to build. Each file has a restatement and a plan of action. Nothing there is built until its status is `Agreed`.
 
-When a new story is finished, add a short copy (story and acceptance, status `Done`) to [completed.md](user-stories/completed.md), delete its file under `user-stories/new/`, and move the row below. Record how the screen actually works in [blueprint.md](blueprint.md).
+When a new story is finished, add a short copy (story and acceptance, status `Done`) to [completed.md](user-stories/completed.md), delete its file under `user-stories/new/`, and move the row below. Record how the screen actually works in a module file under [blueprint.md](blueprint.md).
 
 ## How a new story is added
 
@@ -28,9 +28,8 @@ Each new file contains: **ID**, **Status** (`Needs confirmation`, `Agreed`, or `
 | [US-ACC-01](user-stories/completed.md#us-acc-01) | A visitor can open the registration page.                          | Done   |
 | [US-ACC-02](user-stories/completed.md#us-acc-02) | A visitor can submit name, email, and password and get an account. | Done   |
 | [US-ACC-03](user-stories/completed.md#us-acc-03) | Invalid registration input stays on the form with field errors.    | Done   |
+| [US-CAT-01](user-stories/completed.md#us-cat-01) | A signed-in user can create a category and add subcategories that belong to it. | Done |
 
 ## New
 
-| ID | Summary | Status |
-| --- | --- | --- |
-| [US-CAT-01](user-stories/new/US-CAT-01-create-category-and-subcategories.md) | A signed-in user can create a category and add subcategories that belong to it. | Needs confirmation |
+No new stories yet.
