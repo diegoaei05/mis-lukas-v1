@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Category;
+use App\Models\Expense;
 use App\Models\ExpenseType;
 use App\Models\FixedExpense;
 use App\Models\Subcategory;
@@ -136,5 +137,96 @@ test('the report groups the user bills by category and totals each month', funct
             ->where('totals.1.soles', '1883.35')
             ->where('totals.1.dollars', '20.00')
             ->missing('groups.2'),
+        );
+});
+
+test('variable expenses are summed under each subcategory in sheet order', function () {
+    ['user' => $user, 'category' => $vivienda, 'expenseType' => $expenseType] = reportBillContext();
+    $luz = Subcategory::factory()->for($vivienda)->create(['name' => 'Luz']);
+    $agua = Subcategory::factory()->for($vivienda)->create(['name' => 'Agua']);
+    $comida = Category::factory()->for($user)->create(['name' => 'Comida']);
+    $restaurants = Subcategory::factory()->for($comida)->create(['name' => 'Restaurantes/bares']);
+
+    Expense::factory()->for($user)->for($expenseType)->for($luz)->create([
+        'month' => 1,
+        'year' => 2026,
+        'concept' => 'Recibo',
+        'currency' => 'pen',
+        'amount' => '10.00',
+    ]);
+    Expense::factory()->for($user)->for($expenseType)->for($luz)->create([
+        'month' => 1,
+        'year' => 2026,
+        'concept' => 'Recibo extra',
+        'currency' => 'pen',
+        'amount' => '5.00',
+    ]);
+    Expense::factory()->for($user)->for($expenseType)->for($agua)->create([
+        'month' => 2,
+        'year' => 2026,
+        'concept' => 'Agua',
+        'currency' => 'usd',
+        'amount' => '8.00',
+    ]);
+    Expense::factory()->for($user)->for($expenseType)->for($restaurants)->create([
+        'month' => 1,
+        'year' => 2026,
+        'concept' => 'Koanna',
+        'currency' => 'pen',
+        'amount' => '47.00',
+    ]);
+    Expense::factory()->for($user)->for($expenseType)->for($restaurants)->create([
+        'month' => 1,
+        'year' => 2026,
+        'concept' => 'Trattoria',
+        'currency' => 'pen',
+        'amount' => '38.50',
+    ]);
+    Expense::factory()->for($user)->for($expenseType)->for($luz)->create([
+        'month' => 1,
+        'year' => 2025,
+        'concept' => 'Old',
+        'currency' => 'pen',
+        'amount' => '9.00',
+    ]);
+
+    $someoneElse = User::factory()->create();
+    $hiddenCategory = Category::factory()->for($someoneElse)->create(['name' => 'Comida']);
+    $hiddenSubcategory = Subcategory::factory()->for($hiddenCategory)->create(['name' => 'Restaurantes/bares']);
+    $hiddenType = ExpenseType::factory()->for($someoneElse)->create();
+    Expense::factory()->for($someoneElse)->for($hiddenType)->for($hiddenSubcategory)->create([
+        'month' => 1,
+        'year' => 2026,
+        'concept' => 'Secreto',
+        'currency' => 'pen',
+        'amount' => '99.00',
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('general-report.index', ['year' => 2026]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('variableGroups', 2)
+            ->where('variableGroups.0.category', 'Vivienda')
+            ->has('variableGroups.0.subcategories', 3)
+            ->where('variableGroups.0.subcategories.0.name', 'Luz')
+            ->where('variableGroups.0.subcategories.0.months.0.soles', '15.00')
+            ->where('variableGroups.0.subcategories.0.months.0.dollars', null)
+            ->where('variableGroups.0.subcategories.1.name', 'Agua')
+            ->where('variableGroups.0.subcategories.1.months.1.dollars', '8.00')
+            ->where('variableGroups.0.subcategories.1.months.1.soles', null)
+            ->where('variableGroups.0.subcategories.2.name', 'Renta')
+            ->where('variableGroups.0.subcategories.2.months.0.soles', null)
+            ->where('variableGroups.0.totals.0.soles', '15.00')
+            ->where('variableGroups.0.totals.1.dollars', '8.00')
+            ->where('variableGroups.1.category', 'Comida')
+            ->where('variableGroups.1.subcategories.0.name', 'Restaurantes/bares')
+            ->where('variableGroups.1.subcategories.0.months.0.soles', '85.50')
+            ->where('variableGroups.1.totals.0.soles', '85.50')
+            ->where('variableTotals.0.soles', '100.50')
+            ->where('variableTotals.0.dollars', null)
+            ->where('variableTotals.1.dollars', '8.00')
+            ->where('variableTotals.1.soles', null)
+            ->missing('variableGroups.2'),
         );
 });

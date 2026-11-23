@@ -139,7 +139,7 @@ A recurring bill, described once, and marked paid for the month being viewed.
 
 ## Module: General Report
 
-The year view of fixed bills. Recording a bill still happens in Fixed expenses.
+The year view of fixed bills, with variable expenses underneath. Recording a bill still happens in Fixed expenses. Recording a purchase still happens in Expenses.
 
 <a id="us-rpt-01"></a>
 
@@ -156,6 +156,9 @@ The year view of fixed bills. Recording a bill still happens in Fixed expenses.
 - Bills sit under their category, with a total for that category and a total for all fixed bills.
 - Every month shows the usual amount. A paid month is green. A month marked paid for a different amount shows that amount and is highlighted.
 - A bill in soles leaves Dólares empty, and a bill in dólares leaves Soles empty.
+- Below the fixed bills, each category lists its subcategories. Purchases in a subcategory are added together for each month, under Soles or under Dólares. A subcategory with nothing in a month stays empty.
+- Each of those categories has a total, and the section has a total for all variable expenses.
+- An expense from another year is left out.
 - A guest who opens General Report is redirected to login.
-- Another user's bills are not included.
+- Another user's bills and variable expenses are not included.
 

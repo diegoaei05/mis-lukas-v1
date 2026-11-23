@@ -28,6 +28,18 @@ type FixedExpenseGroup = {
     totals: MonthAmount[];
 };
 
+type VariableSubcategory = {
+    id: number;
+    name: string;
+    months: MonthAmount[];
+};
+
+type VariableExpenseGroup = {
+    category: string;
+    subcategories: VariableSubcategory[];
+    totals: MonthAmount[];
+};
+
 type MonthOption = {
     value: number;
     label: string;
@@ -45,6 +57,9 @@ function formatAmount(amount: string | null): string {
 }
 
 const monthEdge = 'border-r-[1.5px] border-r-zinc-500 dark:border-r-zinc-400';
+
+const headerCell =
+    'border border-solid border-stone-300 bg-stone-200 text-stone-900 shadow-[0_1px_0_0] shadow-stone-300 dark:border-stone-500 dark:bg-stone-700 dark:text-stone-100 dark:shadow-stone-800';
 
 function amountClass(
     tone: 'bill' | 'total' | 'grand',
@@ -79,11 +94,15 @@ function showYear(nextYear: string): void {
 export default function GeneralReportIndex({
     groups,
     totals,
+    variableGroups,
+    variableTotals,
     year,
     months,
 }: {
     groups: FixedExpenseGroup[];
     totals: MonthAmount[];
+    variableGroups: VariableExpenseGroup[];
+    variableTotals: MonthAmount[];
     year: number;
     months: MonthOption[];
 }) {
@@ -104,8 +123,9 @@ export default function GeneralReportIndex({
                         General Report
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                        Fixed bills for the year, grouped by category. A paid
-                        month is green. A month paid for a different amount is
+                        Fixed bills for the year, then each category with its
+                        subcategories underneath. A paid fixed month is green.
+                        A fixed month paid for a different amount is
                         highlighted.
                     </p>
                 </div>
@@ -147,24 +167,31 @@ export default function GeneralReportIndex({
                 <div className="max-h-[70vh] overflow-auto rounded-xl border border-border bg-card">
                     <table className="w-max min-w-full border-separate border-spacing-0 text-sm">
                         <caption className="sr-only">
-                            Fixed expenses for {year}
+                            Fixed and variable expenses for {year}
                         </caption>
-                        <thead className="sticky top-0 z-20 bg-muted">
+                        <thead className="sticky top-0 z-20">
                             <tr>
                                 <th
                                     rowSpan={2}
-                                    className="sticky left-0 z-30 min-w-40 border border-solid border-zinc-300 bg-card px-3 py-2 text-left font-medium shadow-[0_1px_0_0] shadow-zinc-300 dark:border-zinc-600 dark:shadow-zinc-600"
+                                    className="sticky left-0 z-30 min-w-40 bg-card px-3 py-2 shadow-none"
+                                    style={{ border: 'none' }}
                                 >
-                                    Fijos
+                                    <span className="sr-only">Name</span>
                                 </th>
                                 {months.map((option) => (
                                     <th
                                         key={option.value}
                                         colSpan={2}
                                         className={cn(
-                                            'border border-solid border-zinc-300 bg-muted px-2 py-2 text-center font-semibold dark:border-zinc-600',
+                                            headerCell,
+                                            'px-2 py-2 text-center font-semibold',
                                             option.value !== 12 && monthEdge,
                                         )}
+                                        style={
+                                            option.value === 1
+                                                ? { borderLeft: 'none' }
+                                                : undefined
+                                        }
                                     >
                                         {option.label}
                                     </th>
@@ -173,12 +200,23 @@ export default function GeneralReportIndex({
                             <tr>
                                 {months.map((option) => (
                                     <Fragment key={option.value}>
-                                        <th className="min-w-20 border border-solid border-zinc-300 bg-muted px-2 py-1 text-center text-xs font-medium shadow-[0_1px_0_0] shadow-zinc-300 dark:border-zinc-600 dark:shadow-zinc-600">
+                                        <th
+                                            className={cn(
+                                                headerCell,
+                                                'min-w-20 px-2 py-1 text-center text-xs font-medium',
+                                            )}
+                                            style={
+                                                option.value === 1
+                                                    ? { borderLeft: 'none' }
+                                                    : undefined
+                                            }
+                                        >
                                             Soles
                                         </th>
                                         <th
                                             className={cn(
-                                                'min-w-20 border border-solid border-zinc-300 bg-muted px-2 py-1 text-center text-xs font-medium shadow-[0_1px_0_0] shadow-zinc-300 dark:border-zinc-600 dark:shadow-zinc-600',
+                                                headerCell,
+                                                'min-w-20 px-2 py-1 text-center text-xs font-medium',
                                                 option.value !== 12 &&
                                                     monthEdge,
                                             )}
@@ -190,6 +228,26 @@ export default function GeneralReportIndex({
                             </tr>
                         </thead>
                         <tbody>
+                            <tr>
+                                <th
+                                    className="sticky left-0 z-10 border border-border bg-zinc-200 px-3 py-2 text-left font-semibold text-zinc-950 dark:bg-zinc-800 dark:text-zinc-100"
+                                    style={{ borderTop: 'none' }}
+                                >
+                                    Fijos
+                                </th>
+                                {months.map((option) => (
+                                    <Fragment key={option.value}>
+                                        <td className="border border-border bg-zinc-200 dark:bg-zinc-800" />
+                                        <td
+                                            className={cn(
+                                                'border border-border bg-zinc-200 dark:bg-zinc-800',
+                                                option.value !== 12 &&
+                                                    monthEdge,
+                                            )}
+                                        />
+                                    </Fragment>
+                                ))}
+                            </tr>
                             {groups.length === 0 ? (
                                 <tr>
                                     <td
@@ -302,6 +360,147 @@ export default function GeneralReportIndex({
                                         Total fijos
                                     </th>
                                     {totals.map((cell) => (
+                                        <Fragment key={cell.month}>
+                                            <td
+                                                className={amountClass('grand')}
+                                            >
+                                                {formatAmount(cell.soles)}
+                                            </td>
+                                            <td
+                                                className={amountClass(
+                                                    'grand',
+                                                    false,
+                                                    false,
+                                                    cell.month !== 12,
+                                                )}
+                                            >
+                                                {formatAmount(cell.dollars)}
+                                            </td>
+                                        </Fragment>
+                                    ))}
+                                </tr>
+                            )}
+                            <tr>
+                                <th className="sticky left-0 z-10 border border-border bg-zinc-200 px-3 py-2 text-left font-semibold text-zinc-950 dark:bg-zinc-800 dark:text-zinc-100">
+                                    Variables
+                                </th>
+                                {months.map((option) => (
+                                    <Fragment key={option.value}>
+                                        <td className="border border-border bg-zinc-200 dark:bg-zinc-800" />
+                                        <td
+                                            className={cn(
+                                                'border border-border bg-zinc-200 dark:bg-zinc-800',
+                                                option.value !== 12 &&
+                                                    monthEdge,
+                                            )}
+                                        />
+                                    </Fragment>
+                                ))}
+                            </tr>
+                            {variableGroups.length === 0 ? (
+                                <tr>
+                                    <td
+                                        colSpan={columnCount}
+                                        className="border border-border px-4 py-6 text-muted-foreground"
+                                    >
+                                        No variable expenses for this year.
+                                    </td>
+                                </tr>
+                            ) : (
+                                variableGroups.map((group) => (
+                                    <Fragment key={`variable-${group.category}`}>
+                                        <tr>
+                                            <th className="sticky left-0 z-10 border border-border bg-sky-100 px-3 py-1.5 text-left font-semibold text-sky-950 dark:bg-sky-950 dark:text-sky-100">
+                                                {group.category}
+                                            </th>
+                                            {months.map((option) => (
+                                                <Fragment key={option.value}>
+                                                    <td className="border border-border bg-sky-100 dark:bg-sky-950" />
+                                                    <td
+                                                        className={cn(
+                                                            'border border-border bg-sky-100 dark:bg-sky-950',
+                                                            option.value !==
+                                                                12 &&
+                                                                monthEdge,
+                                                        )}
+                                                    />
+                                                </Fragment>
+                                            ))}
+                                        </tr>
+                                        {group.subcategories.map(
+                                            (subcategory) => (
+                                            <tr key={subcategory.id}>
+                                                <th className="sticky left-0 z-10 border border-border bg-card px-3 py-1.5 text-left font-medium">
+                                                    {subcategory.name}
+                                                </th>
+                                                {subcategory.months.map(
+                                                    (cell) => (
+                                                    <Fragment key={cell.month}>
+                                                        <td
+                                                            className={amountClass(
+                                                                'bill',
+                                                            )}
+                                                        >
+                                                            {formatAmount(
+                                                                cell.soles,
+                                                            )}
+                                                        </td>
+                                                        <td
+                                                            className={amountClass(
+                                                                'bill',
+                                                                false,
+                                                                false,
+                                                                cell.month !==
+                                                                    12,
+                                                            )}
+                                                        >
+                                                            {formatAmount(
+                                                                cell.dollars,
+                                                            )}
+                                                        </td>
+                                                    </Fragment>
+                                                ))}
+                                            </tr>
+                                        ))}
+                                        <tr>
+                                            <th className="sticky left-0 z-10 border border-border bg-[#8f7628] px-3 py-1.5 text-left font-semibold text-[#f6ecc8]">
+                                                Total
+                                            </th>
+                                            {group.totals.map((cell) => (
+                                                <Fragment key={cell.month}>
+                                                    <td
+                                                        className={amountClass(
+                                                            'total',
+                                                        )}
+                                                    >
+                                                        {formatAmount(
+                                                            cell.soles,
+                                                        )}
+                                                    </td>
+                                                    <td
+                                                        className={amountClass(
+                                                            'total',
+                                                            false,
+                                                            false,
+                                                            cell.month !== 12,
+                                                        )}
+                                                    >
+                                                        {formatAmount(
+                                                            cell.dollars,
+                                                        )}
+                                                    </td>
+                                                </Fragment>
+                                            ))}
+                                        </tr>
+                                    </Fragment>
+                                ))
+                            )}
+                            {variableGroups.length > 0 && (
+                                <tr>
+                                    <th className="sticky left-0 z-10 border border-border bg-[#6f5b1e] px-3 py-2 text-left font-semibold text-[#f6ecc8]">
+                                        Total variables
+                                    </th>
+                                    {variableTotals.map((cell) => (
                                         <Fragment key={cell.month}>
                                             <td
                                                 className={amountClass('grand')}
