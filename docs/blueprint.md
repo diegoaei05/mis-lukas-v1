@@ -56,6 +56,7 @@ Registration is the exception that uses Fortify’s controller. Application scre
 
 | Module | Summary |
 | --- | --- |
+| [Dashboard](blueprint/dashboard.md) | A signed-in user sees each month as a stacked bar of fixed bills and variable expenses, once for Soles and once for Dólares. |
 | [Accounts](blueprint/accounts.md) | A visitor registers, and a row is written to `users`. |
 | [Categories](blueprint/categories.md) | A signed-in user picks a category, then adds or deletes its subcategories. |
 | [Expense Types](blueprint/expense-types.md) | A signed-in user creates an acronym and a description for each Tipo. |
