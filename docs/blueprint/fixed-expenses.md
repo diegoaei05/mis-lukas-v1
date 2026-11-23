@@ -15,7 +15,7 @@ GET /fixed-expenses?month={month}&year={year}
       resources/js/pages/fixed-expenses/index.tsx
 ```
 
-The page opens on the current month. Choosing a month reloads that month immediately. Changing the year and leaving the field reloads that year. Every bill appears in every month. The table lists Name, Tipo, Categoría, Subcategoría, Soles, Dólares, and Paid. A form adds a bill.
+The page opens on the current month. Choosing a month reloads that month immediately. Changing the year and leaving the field reloads that year. Every bill appears in every month, under a band for its category, in the same order as the general report. The table lists Name, Tipo, Subcategoría, Soles, Dólares, and Paid. A form adds a bill. Edit, next to Mark paid or Clear, changes that bill. Delete asks for confirmation, then removes the bill and every month already marked paid.
 
 ```text
 POST /fixed-expenses
@@ -30,6 +30,19 @@ POST /fixed-expenses
     the subcategory must belong to the selected category
     INSERT INTO fixed_expenses
 
+PUT /fixed-expenses/{fixedExpense}
+  UpdateFixedExpenseRequest
+    the bill must belong to this user, or the response is 404
+    the same rules as creating a bill
+    the current name is allowed, including a change of letter case
+    a paid month is left as it is
+    UPDATE fixed_expenses
+
+DELETE /fixed-expenses/{fixedExpense}
+  the bill must belong to this user, or the response is 404
+  DELETE FROM fixed_expenses
+  payments for that bill are removed with it
+
 POST /fixed-expenses/{fixedExpense}/payments
   the bill must belong to this user, or the response is 404
   the month must not already be paid
@@ -41,7 +54,7 @@ DELETE /fixed-expenses/{fixedExpense}/payments
   the bill remains
 ```
 
-The create form posts through Wayfinder and uses the `createFixedExpense` error bag. Each row's payment form uses `payment-{id}`. A successful create or payment change redirects to `fixed-expenses.index` for the month being viewed and flashes a toast.
+The create form posts through Wayfinder and uses the `createFixedExpense` error bag. The edit dialog uses `updateFixedExpense-{id}`. Each row's payment form uses `payment-{id}`. Delete posts through Wayfinder after confirmation. A successful create, edit, delete, or payment change redirects to `fixed-expenses.index` for the month being viewed and flashes a toast.
 
 `name`, `currency`, and `amount` are the only fillable attributes on the bill. `user_id`, `expense_type_id`, and `subcategory_id` are set from the signed-in user and the chosen type and subcategory. The paid amount is stored on the payment, so a different amount for one month leaves the usual amount unchanged.
 

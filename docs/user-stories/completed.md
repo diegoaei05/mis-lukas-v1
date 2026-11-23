@@ -132,6 +132,30 @@ A recurring bill, described once, and marked paid for the month being viewed.
 - They can create a bill with a name, one of their expense types, one of their categories, a subcategory of that category, a currency, and a usual amount. The bill appears in every month.
 - For a chosen month and year, the table shows their bills. The usual amount shows under Soles or under Dólares.
 - They can mark one of those bills paid for that month, with the usual amount or a different amount, and they can clear that paid mark.
+- They can edit a bill's name, expense type, category, subcategory, currency, and usual amount. A month already marked paid keeps that month's amount.
+- They can delete a bill after confirming. The months already marked paid are removed with it.
 - A guest who opens Fixed expenses is redirected to login.
 - An empty name, a name that user already has, a missing amount, a subcategory that does not belong to the chosen category, another user's subcategory, or another user's expense type is shown as an error and is not saved.
+
+## Module: General Report
+
+The year view of fixed bills. Recording a bill still happens in Fixed expenses.
+
+<a id="us-rpt-01"></a>
+
+### US-RPT-01 — See fixed bills for the year
+
+**Status:** Done
+
+**Story:** As a signed-in user, I want a General Report with the fixed section of my spreadsheet, so that I can see every month of the year with Soles and Dólares.
+
+**Acceptance:**
+
+- A signed-in, verified user can open General Report from the main navigation.
+- The table shows the chosen year. Each month has a Soles column and a Dólares column.
+- Bills sit under their category, with a total for that category and a total for all fixed bills.
+- Every month shows the usual amount. A paid month is green. A month marked paid for a different amount shows that amount and is highlighted.
+- A bill in soles leaves Dólares empty, and a bill in dólares leaves Soles empty.
+- A guest who opens General Report is redirected to login.
+- Another user's bills are not included.
 

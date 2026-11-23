@@ -61,3 +61,4 @@ Registration is the exception that uses Fortify’s controller. Application scre
 | [Expense Types](blueprint/expense-types.md) | A signed-in user creates an acronym and a description for each Tipo. |
 | [Expenses](blueprint/expenses.md) | A signed-in user records a purchase and sees it in the spreadsheet table. |
 | [Fixed expenses](blueprint/fixed-expenses.md) | A signed-in user describes a recurring bill once and marks a month paid. |
+| [General Report](blueprint/general-report.md) | A signed-in user sees fixed bills for the year, grouped by category, with Soles and Dólares for each month. |

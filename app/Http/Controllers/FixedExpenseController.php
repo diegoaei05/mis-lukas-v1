@@ -7,12 +7,14 @@ use App\Enums\Month;
 use App\Http\Requests\DestroyFixedExpensePaymentRequest;
 use App\Http\Requests\StoreFixedExpensePaymentRequest;
 use App\Http\Requests\StoreFixedExpenseRequest;
+use App\Http\Requests\UpdateFixedExpenseRequest;
 use App\Models\Category;
 use App\Models\ExpenseType;
 use App\Models\FixedExpense;
 use App\Models\Subcategory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -41,8 +43,12 @@ class FixedExpenseController extends Controller
                     'id' => $fixedExpense->id,
                     'name' => $fixedExpense->name,
                     'type' => $fixedExpense->expenseType->acronym,
+                    'expenseTypeId' => $fixedExpense->expense_type_id,
                     'category' => $fixedExpense->subcategory->category->name,
+                    'categoryId' => $fixedExpense->subcategory->category_id,
                     'subcategory' => $fixedExpense->subcategory->name,
+                    'subcategoryId' => $fixedExpense->subcategory_id,
+                    'currency' => $fixedExpense->currency->value,
                     'amount' => $fixedExpense->amount,
                     'soles' => $fixedExpense->currency === Currency::Pen ? $fixedExpense->amount : null,
                     'dollars' => $fixedExpense->currency === Currency::Usd ? $fixedExpense->amount : null,
@@ -109,6 +115,39 @@ class FixedExpenseController extends Controller
         $request->user()->fixedExpenses()->save($fixedExpense);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Fixed expense created.')]);
+
+        [$month, $year] = $this->period($request->integer('view_month'), $request->integer('view_year'));
+
+        return to_route('fixed-expenses.index', ['month' => $month, 'year' => $year]);
+    }
+
+    /**
+     * Update a fixed expense for the signed-in user.
+     */
+    public function update(UpdateFixedExpenseRequest $request, FixedExpense $fixedExpense): RedirectResponse
+    {
+        $fixedExpense->fill($request->safe()->only(['name', 'currency', 'amount']));
+        $fixedExpense->expenseType()->associate($request->expenseType());
+        $fixedExpense->subcategory()->associate($request->subcategory());
+        $fixedExpense->save();
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Fixed expense updated.')]);
+
+        [$month, $year] = $this->period($request->integer('view_month'), $request->integer('view_year'));
+
+        return to_route('fixed-expenses.index', ['month' => $month, 'year' => $year]);
+    }
+
+    /**
+     * Delete a fixed expense and the months already marked paid.
+     */
+    public function destroy(Request $request, FixedExpense $fixedExpense): RedirectResponse
+    {
+        Gate::authorize('delete', $fixedExpense);
+
+        $fixedExpense->delete();
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Fixed expense deleted.')]);
 
         [$month, $year] = $this->period($request->integer('view_month'), $request->integer('view_year'));
 
