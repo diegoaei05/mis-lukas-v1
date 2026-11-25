@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\CategoryColor;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -65,9 +66,10 @@ class CategorySeeder extends Seeder
     {
         User::query()->each(function (User $user): void {
             foreach (self::CATALOG as $categoryName => $subcategoryNames) {
-                $category = $user->categories()->firstOrCreate([
-                    'name' => $categoryName,
-                ]);
+                $category = $user->categories()->firstOrCreate(
+                    ['name' => $categoryName],
+                    ['color' => CategoryColor::forCatalogName($categoryName)],
+                );
 
                 foreach ($subcategoryNames as $subcategoryName) {
                     $category->subcategories()->firstOrCreate([

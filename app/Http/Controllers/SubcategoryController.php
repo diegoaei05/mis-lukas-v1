@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSubcategoryRequest;
+use App\Http\Requests\UpdateSubcategoryRequest;
 use App\Models\Category;
 use App\Models\Subcategory;
 use Illuminate\Http\RedirectResponse;
@@ -19,6 +20,18 @@ class SubcategoryController extends Controller
         $category->subcategories()->create($request->safe()->only(['name']));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Subcategory created.')]);
+
+        return to_route('categories.index', ['category' => $category->id]);
+    }
+
+    /**
+     * Update a subcategory on one of the signed-in user's categories.
+     */
+    public function update(UpdateSubcategoryRequest $request, Category $category, Subcategory $subcategory): RedirectResponse
+    {
+        $subcategory->update($request->safe()->only(['name']));
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Subcategory updated.')]);
 
         return to_route('categories.index', ['category' => $category->id]);
     }

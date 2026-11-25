@@ -46,6 +46,7 @@ class FixedExpenseController extends Controller
                     'expenseTypeId' => $fixedExpense->expense_type_id,
                     'category' => $fixedExpense->subcategory->category->name,
                     'categoryId' => $fixedExpense->subcategory->category_id,
+                    'categoryColor' => $fixedExpense->subcategory->category->color?->value,
                     'subcategory' => $fixedExpense->subcategory->name,
                     'subcategoryId' => $fixedExpense->subcategory_id,
                     'currency' => $fixedExpense->currency->value,

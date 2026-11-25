@@ -2,10 +2,12 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\CategoryColor;
 use App\Models\Category;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreCategoryRequest extends FormRequest
 {
@@ -60,6 +62,7 @@ class StoreCategoryRequest extends FormRequest
                     }
                 },
             ],
+            'color' => ['required', Rule::enum(CategoryColor::class)],
         ];
     }
 }

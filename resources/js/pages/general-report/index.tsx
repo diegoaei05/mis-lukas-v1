@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import { Fragment, useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { CategoryPill } from '@/lib/category-colors';
 import { cn } from '@/lib/utils';
 import { index } from '@/routes/general-report';
 
@@ -24,6 +25,7 @@ type FixedExpenseBill = {
 
 type FixedExpenseGroup = {
     category: string;
+    color: string | null;
     bills: FixedExpenseBill[];
     totals: MonthAmount[];
 };
@@ -36,6 +38,7 @@ type VariableSubcategory = {
 
 type VariableExpenseGroup = {
     category: string;
+    color: string | null;
     subcategories: VariableSubcategory[];
     totals: MonthAmount[];
 };
@@ -179,11 +182,13 @@ export default function GeneralReportIndex({ groups, totals, variableGroups, var
                                 groups.map((group) => (
                                     <Fragment key={group.category}>
                                         <tr>
-                                            <th className="sticky left-0 z-10 border border-border bg-sky-100 px-3 py-1.5 text-left font-semibold text-sky-950 dark:bg-sky-950 dark:text-sky-100">{group.category}</th>
+                                            <th className="sticky left-0 z-10 border border-border bg-muted/40 px-3 py-1.5 text-left font-semibold">
+                                                <CategoryPill label={group.category} color={group.color} />
+                                            </th>
                                             {months.map((option) => (
                                                 <Fragment key={option.value}>
-                                                    <td className="border border-border bg-sky-100 dark:bg-sky-950" />
-                                                    <td className={cn('border border-border bg-sky-100 dark:bg-sky-950', option.value !== 12 && monthEdge)} />
+                                                    <td className="border border-border bg-muted/40" />
+                                                    <td className={cn('border border-border bg-muted/40', option.value !== 12 && monthEdge)} />
                                                 </Fragment>
                                             ))}
                                         </tr>
@@ -240,11 +245,13 @@ export default function GeneralReportIndex({ groups, totals, variableGroups, var
                                 variableGroups.map((group) => (
                                     <Fragment key={`variable-${group.category}`}>
                                         <tr>
-                                            <th className="sticky left-0 z-10 border border-border bg-sky-100 px-3 py-1.5 text-left font-semibold text-sky-950 dark:bg-sky-950 dark:text-sky-100">{group.category}</th>
+                                            <th className="sticky left-0 z-10 border border-border bg-muted/40 px-3 py-1.5 text-left font-semibold">
+                                                <CategoryPill label={group.category} color={group.color} />
+                                            </th>
                                             {months.map((option) => (
                                                 <Fragment key={option.value}>
-                                                    <td className="border border-border bg-sky-100 dark:bg-sky-950" />
-                                                    <td className={cn('border border-border bg-sky-100 dark:bg-sky-950', option.value !== 12 && monthEdge)} />
+                                                    <td className="border border-border bg-muted/40" />
+                                                    <td className={cn('border border-border bg-muted/40', option.value !== 12 && monthEdge)} />
                                                 </Fragment>
                                             ))}
                                         </tr>

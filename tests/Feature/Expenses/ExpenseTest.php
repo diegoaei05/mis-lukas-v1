@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\CategoryColor;
 use App\Enums\Currency;
 use App\Enums\Month;
 use App\Models\Category;
@@ -17,7 +18,10 @@ use Inertia\Testing\AssertableInertia as Assert;
 function expenseOwner(): array
 {
     $user = User::factory()->create();
-    $category = Category::factory()->for($user)->create(['name' => 'Comida']);
+    $category = Category::factory()->for($user)->create([
+        'name' => 'Comida',
+        'color' => CategoryColor::Green,
+    ]);
     $subcategory = Subcategory::factory()->for($category)->create(['name' => 'Restaurantes/bares']);
     $expenseType = ExpenseType::factory()->for($user)->create([
         'acronym' => 'IO',
@@ -140,6 +144,7 @@ test('a user sees only their expenses with the type acronym and one currency col
             ->where('expenses.0.amount', '12.90')
             ->where('expenses.0.category', 'Comida')
             ->where('expenses.0.categoryId', $category->id)
+            ->where('expenses.0.categoryColor', 'green')
             ->where('expenses.0.subcategory', 'Restaurantes/bares')
             ->where('expenses.0.subcategoryId', $subcategory->id)
             ->where('expenses.0.soles', null)
@@ -203,6 +208,7 @@ test('an expense can be saved without a category or subcategory', function () {
             ->where('expenses.0.concept', 'Koanna - Rest')
             ->where('expenses.0.category', null)
             ->where('expenses.0.categoryId', null)
+            ->where('expenses.0.categoryColor', null)
             ->where('expenses.0.subcategory', null)
             ->where('expenses.0.subcategoryId', null),
         );
@@ -234,6 +240,7 @@ test('an expense can be saved with a category and no subcategory', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->where('expenses.0.category', 'Comida')
+            ->where('expenses.0.categoryColor', 'green')
             ->where('expenses.0.subcategory', null),
         );
 });

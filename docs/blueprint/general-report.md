@@ -23,6 +23,6 @@ GET /general-report?year={year}
       resources/js/pages/general-report/index.tsx
 ```
 
-The page opens on the current year. Changing the year and leaving the field reloads that year. The table starts with a Fijos band, then a category band, each bill, a Total row, and Total fijos. Under that, a Variables band, then each category with its subcategories, a Total for the category, and Total variables. Every month has a Soles column and a Dólares column. A bill in soles leaves Dólares empty, and the other way around. A paid fixed month has a green cell. A fixed month paid for a different amount than the usual amount is highlighted instead. A subcategory shows the sum of that year's purchases in each month, and a month with none stays empty.
+The page opens on the current year. Changing the year and leaving the field reloads that year. The table starts with a Fijos band, then a category band, each bill, a Total row, and Total fijos. Under that, a Variables band, then each category with its subcategories, a Total for the category, and Total variables. A category with a stored color shows as a pill in that color. A category with no color is plain text. Every month has a Soles column and a Dólares column. A bill in soles leaves Dólares empty, and the other way around. A paid fixed month has a green cell. A fixed month paid for a different amount than the usual amount is highlighted instead. A subcategory shows the sum of that year's purchases in each month, and a month with none stays empty.
 
 This screen does not write to the database.

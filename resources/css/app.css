@@ -60,6 +60,19 @@
     --color-total: var(--total);
     --color-total-foreground: var(--total-foreground);
     --color-grand-total: var(--grand-total);
+
+    --color-amount-100: var(--amount-100);
+    --color-amount-200: var(--amount-200);
+    --color-amount-500: var(--amount-500);
+    --color-amount-foreground: var(--amount-foreground);
+    --color-amount-500-foreground: var(--amount-500-foreground);
+
+    --color-category-green: var(--category-green);
+    --color-category-purple: var(--category-purple);
+    --color-category-blue: var(--category-blue);
+    --color-category-gold: var(--category-gold);
+    --color-category-red: var(--category-red);
+    --color-category-foreground: var(--category-foreground);
 }
 
 :root {
@@ -99,6 +112,17 @@
     --total: #8f7628;
     --total-foreground: #f6ecc8;
     --grand-total: #6f5b1e;
+    --amount-100: #e5d622;
+    --amount-200: #e58a22;
+    --amount-500: #e42a22;
+    --amount-foreground: #1f1f1f;
+    --amount-500-foreground: #ffffff;
+    --category-green: #a7df60;
+    --category-purple: #be8de5;
+    --category-blue: #7dc6fd;
+    --category-gold: #efcb60;
+    --category-red: #ff4343;
+    --category-foreground: #1f1f1f;
 }
 
 .dark {

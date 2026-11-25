@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\CategoryColor;
 use App\Models\Category;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -21,6 +22,7 @@ class CategoryFactory extends Factory
         return [
             'user_id' => User::factory(),
             'name' => fake()->unique()->words(2, true),
+            'color' => fake()->randomElement(CategoryColor::cases()),
         ];
     }
 }

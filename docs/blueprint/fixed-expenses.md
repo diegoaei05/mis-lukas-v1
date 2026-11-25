@@ -15,7 +15,7 @@ GET /fixed-expenses?month={month}&year={year}
       resources/js/pages/fixed-expenses/index.tsx
 ```
 
-The page opens on the current month. Choosing a month reloads that month immediately. Changing the year and leaving the field reloads that year. Every bill appears in every month, under a band for its category, in the same order as the general report. The table lists Name, Tipo, Subcategoría, Soles, Dólares, and Paid. A form adds a bill. Edit, next to Mark paid or Clear, changes that bill. Delete asks for confirmation, then removes the bill and every month already marked paid.
+The page opens on the current month. Choosing a month reloads that month immediately. Changing the year and leaving the field reloads that year. Every bill appears in every month, under a band for its category, in the same order as the general report. A category with a stored color shows as a pill in that color. A category with no color is plain text. The table lists Name, Tipo, Subcategoría, Soles, Dólares, and Paid. A form adds a bill. Edit, next to Mark paid or Clear, changes that bill. Delete asks for confirmation, then removes the bill and every month already marked paid.
 
 ```text
 POST /fixed-expenses

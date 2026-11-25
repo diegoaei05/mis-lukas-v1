@@ -100,6 +100,7 @@ class GeneralReportController extends Controller
 
                 return [
                     'category' => $category,
+                    'color' => $bills->first()?->subcategory->category->color?->value,
                     'bills' => $rows,
                     'totals' => $this->sumMonths(array_column($rows, 'months')),
                 ];
@@ -130,7 +131,7 @@ class GeneralReportController extends Controller
      *
      * @param  Collection<int, Category>  $categories
      * @param  Collection<int, Expense>  $expenses
-     * @return list<array{category: string, subcategories: list<array{id: int, name: string, months: array<int, array{month: int, soles: string|null, dollars: string|null}>}>, totals: array<int, array{month: int, soles: string|null, dollars: string|null}>}>
+     * @return list<array{category: string, color: string|null, subcategories: list<array{id: int, name: string, months: array<int, array{month: int, soles: string|null, dollars: string|null}>}>, totals: array<int, array{month: int, soles: string|null, dollars: string|null}>}>
      */
     private function variableGroups(Collection $categories, Collection $expenses): array
     {
@@ -159,6 +160,7 @@ class GeneralReportController extends Controller
 
                 return [
                     'category' => $category->name,
+                    'color' => $category->color?->value,
                     'subcategories' => $rows,
                     'totals' => $this->sumMonths(array_column($rows, 'months')),
                 ];

@@ -8,6 +8,8 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CategoryPill } from '@/lib/category-colors';
+import { cn } from '@/lib/utils';
 import { index as expenseTypesIndex } from '@/routes/expense-types';
 import { index } from '@/routes/expenses';
 
@@ -21,6 +23,7 @@ type ExpenseRow = {
     concept: string;
     category: string | null;
     categoryId: number | null;
+    categoryColor: string | null;
     subcategory: string | null;
     subcategoryId: number | null;
     currency: string;
@@ -58,12 +61,44 @@ type CurrencyOption = {
 
 const emptyChoice = 'none';
 
-function FilingCell({ name }: { name: string | null }) {
-    if (name === null || name === '') {
-        return <span className="font-medium text-red-600 dark:text-red-400">-</span>;
+function amountFill(amount: string | null): string {
+    if (amount === null || amount === '') {
+        return '';
     }
 
-    return <span className="break-words">{name}</span>;
+    const value = Number(amount);
+
+    if (Number.isNaN(value)) {
+        return '';
+    }
+
+    if (value > 500) {
+        return 'bg-amount-500 text-amount-500-foreground';
+    }
+
+    if (value > 200) {
+        return 'bg-amount-200 text-amount-foreground';
+    }
+
+    if (value > 100) {
+        return 'bg-amount-100 text-amount-foreground';
+    }
+
+    return '';
+}
+
+function AmountPill({ amount }: { amount: string | null }) {
+    if (amount === null || amount === '') {
+        return null;
+    }
+
+    const fill = amountFill(amount);
+
+    if (fill === '') {
+        return <>{amount}</>;
+    }
+
+    return <span className={cn('inline-block rounded-full px-2.5 py-0.5 tabular-nums', fill)}>{amount}</span>;
 }
 
 function RowSelect({ id, value, onValueChange, options, disabled = false, error, emptyLabel, className = 'w-full min-w-0' }: { id: string; value: string; onValueChange: (value: string) => void; options: { value: string; label: string }[]; disabled?: boolean; error?: string; emptyLabel?: string; className?: string }) {
@@ -358,14 +393,14 @@ export default function ExpensesIndex({ year, years, expenses, expenseTypes, cat
                         </colgroup>
                         <thead className="border-b border-border bg-muted/40 text-left">
                             <tr>
-                                <th className="px-4 py-3 font-medium">Mes</th>
-                                <th className="px-2 py-3 font-medium">Tipo</th>
-                                <th className="px-4 py-3 font-medium">Concepto</th>
-                                <th className="px-4 py-3 font-medium">Categoría</th>
-                                <th className="px-4 py-3 font-medium">Subcategoría</th>
-                                <th className="px-4 py-3 text-right font-medium">Soles</th>
-                                <th className="px-4 py-3 text-right font-medium">Dólares</th>
-                                <th className="px-4 py-3 text-right font-medium">Acciones</th>
+                                <th className="px-4 py-2 font-medium">Mes</th>
+                                <th className="px-2 py-2 font-medium">Tipo</th>
+                                <th className="px-4 py-2 font-medium">Concepto</th>
+                                <th className="px-4 py-2 font-medium">Categoría</th>
+                                <th className="px-4 py-2 font-medium">Subcategoría</th>
+                                <th className="px-4 py-2 text-right font-medium">Soles</th>
+                                <th className="px-4 py-2 text-right font-medium">Dólares</th>
+                                <th className="px-4 py-2 text-right font-medium">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -382,7 +417,7 @@ export default function ExpensesIndex({ year, years, expenses, expenseTypes, cat
 
                                     return (
                                         <tr key={expense.id} className="border-b border-border last:border-b-0">
-                                            <td className="px-4 py-3">
+                                            <td className="px-4 py-2">
                                                 {editing ? (
                                                     <RowSelect
                                                         id={`expense-${expense.id}-month`}
@@ -399,7 +434,7 @@ export default function ExpensesIndex({ year, years, expenses, expenseTypes, cat
                                                     expense.month
                                                 )}
                                             </td>
-                                            <td className="px-2 py-3 font-medium">
+                                            <td className="px-2 py-2 font-medium">
                                                 {editing ? (
                                                     <RowSelect
                                                         id={`expense-${expense.id}-type`}
@@ -416,7 +451,7 @@ export default function ExpensesIndex({ year, years, expenses, expenseTypes, cat
                                                     expense.type
                                                 )}
                                             </td>
-                                            <td className="px-4 py-3">
+                                            <td className="px-4 py-2">
                                                 {editing ? (
                                                     <div className="grid w-full min-w-0 gap-1 overflow-hidden">
                                                         <Input id={`expense-${expense.id}-concept`} value={filing.data.concept} maxLength={255} onChange={(event) => filing.setData('concept', event.target.value)} className="h-8" />
@@ -426,7 +461,7 @@ export default function ExpensesIndex({ year, years, expenses, expenseTypes, cat
                                                     expense.concept
                                                 )}
                                             </td>
-                                            <td className="px-4 py-3">
+                                            <td className="px-4 py-2">
                                                 {editing ? (
                                                     <RowSelect
                                                         id={`expense-${expense.id}-category`}
@@ -440,10 +475,10 @@ export default function ExpensesIndex({ year, years, expenses, expenseTypes, cat
                                                         error={filing.errors.category_id}
                                                     />
                                                 ) : (
-                                                    <FilingCell name={expense.category} />
+                                                    <CategoryPill label={expense.category} color={expense.categoryColor} />
                                                 )}
                                             </td>
-                                            <td className="px-4 py-3">
+                                            <td className="px-4 py-2">
                                                 {editing ? (
                                                     <RowSelect
                                                         id={`expense-${expense.id}-subcategory`}
@@ -457,11 +492,13 @@ export default function ExpensesIndex({ year, years, expenses, expenseTypes, cat
                                                         disabled={filing.data.category_id === ''}
                                                         error={filing.errors.subcategory_id}
                                                     />
+                                                ) : expense.subcategory === null || expense.subcategory === '' ? (
+                                                    <span className="font-medium text-white">-</span>
                                                 ) : (
-                                                    <FilingCell name={expense.subcategory} />
+                                                    <span className="break-words">{expense.subcategory}</span>
                                                 )}
                                             </td>
-                                            <td className="px-4 py-3 text-right tabular-nums">
+                                            <td className="px-4 py-2 text-right tabular-nums">
                                                 {editing ? (
                                                     <AmountEditor
                                                         id={`expense-${expense.id}-soles`}
@@ -476,10 +513,10 @@ export default function ExpensesIndex({ year, years, expenses, expenseTypes, cat
                                                         }
                                                     />
                                                 ) : (
-                                                    expense.soles
+                                                    <AmountPill amount={expense.soles} />
                                                 )}
                                             </td>
-                                            <td className="px-4 py-3 text-right tabular-nums">
+                                            <td className="px-4 py-2 text-right tabular-nums">
                                                 {editing ? (
                                                     <AmountEditor
                                                         id={`expense-${expense.id}-dollars`}
@@ -494,10 +531,10 @@ export default function ExpensesIndex({ year, years, expenses, expenseTypes, cat
                                                         }
                                                     />
                                                 ) : (
-                                                    expense.dollars
+                                                    <AmountPill amount={expense.dollars} />
                                                 )}
                                             </td>
-                                            <td className="px-3 py-3 text-right whitespace-nowrap">
+                                            <td className="px-3 py-2 text-right whitespace-nowrap">
                                                 {editing ? (
                                                     <div className="flex justify-end gap-2">
                                                         <Button

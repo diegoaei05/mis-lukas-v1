@@ -56,6 +56,7 @@ class ExpenseController extends Controller
                 'concept' => $expense->concept,
                 'category' => $expense->category?->name ?? $expense->subcategory?->category?->name,
                 'categoryId' => $expense->category_id ?? $expense->subcategory?->category_id,
+                'categoryColor' => ($expense->category ?? $expense->subcategory?->category)?->color?->value,
                 'subcategory' => $expense->subcategory?->name,
                 'subcategoryId' => $expense->subcategory_id,
                 'currency' => $expense->currency->value,

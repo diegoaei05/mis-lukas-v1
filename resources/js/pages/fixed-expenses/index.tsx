@@ -7,6 +7,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CategoryPill } from '@/lib/category-colors';
 import { index as categoriesIndex } from '@/routes/categories';
 import { index as expenseTypesIndex } from '@/routes/expense-types';
 import { index } from '@/routes/fixed-expenses';
@@ -18,6 +19,7 @@ type FixedExpenseRow = {
     expenseTypeId: number;
     category: string;
     categoryId: number;
+    categoryColor: string | null;
     subcategory: string;
     subcategoryId: number;
     currency: string;
@@ -61,6 +63,7 @@ function sheetIndex(order: string[], name: string): number {
 
 function groupedBills(bills: FixedExpenseRow[]): {
     category: string;
+    color: string | null;
     bills: FixedExpenseRow[];
 }[] {
     const groups = new Map<string, FixedExpenseRow[]>();
@@ -84,6 +87,7 @@ function groupedBills(bills: FixedExpenseRow[]): {
         })
         .map(([category, rows]) => ({
             category,
+            color: rows[0]?.categoryColor ?? null,
             bills: [...rows].sort((left, right) => {
                 const order = billOrder[category] ?? [];
                 const leftIndex = sheetIndex(order, left.name);
@@ -386,8 +390,8 @@ export default function FixedExpensesIndex({ fixedExpenses, expenseTypes, catego
                                 billGroups.map((group) => (
                                     <Fragment key={group.category}>
                                         <tr>
-                                            <th colSpan={7} className="bg-sky-100 px-4 py-2 text-left font-semibold text-sky-950 dark:bg-sky-950 dark:text-sky-100">
-                                                {group.category}
+                                            <th colSpan={7} className="bg-muted/40 px-4 py-2 text-left font-semibold">
+                                                <CategoryPill label={group.category} color={group.color} />
                                             </th>
                                         </tr>
                                         {group.bills.map((bill) => (

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\CategoryColor;
 use App\Models\Subcategory;
 use App\Models\User;
 use Database\Seeders\CategorySeeder;
@@ -20,7 +21,12 @@ test('each user receives the spending categories and their subcategories', funct
         'Financieros',
         'Comida',
         'Otros',
-    ])->and($names($someoneElse))->toHaveCount(5);
+    ])->and($names($someoneElse))->toHaveCount(5)
+        ->and($user->categories()->where('name', 'Comida')->first()->color)->toBe(CategoryColor::Green)
+        ->and($user->categories()->where('name', 'Otros')->first()->color)->toBe(CategoryColor::Purple)
+        ->and($user->categories()->where('name', 'Vivienda')->first()->color)->toBe(CategoryColor::Blue)
+        ->and($user->categories()->where('name', 'Financieros')->first()->color)->toBe(CategoryColor::Gold)
+        ->and($user->categories()->where('name', 'PKYTP')->first()->color)->toBe(CategoryColor::Red);
 
     expect($names($user, 'PKYTP'))->toEqualCanonicalizing([
         'PUNKUYTP',

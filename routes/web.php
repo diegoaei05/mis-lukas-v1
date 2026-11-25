@@ -14,7 +14,7 @@ Route::inertia('/', 'welcome')->name('home');
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::resource('categories', CategoryController::class)->only(['index', 'store']);
+    Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('expense-types', ExpenseTypeController::class)->only(['index', 'store']);
     Route::resource('expenses', ExpenseController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('fixed-expenses', FixedExpenseController::class)
@@ -27,6 +27,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('fixed-expenses.payments.destroy');
     Route::post('categories/{category}/subcategories', [SubcategoryController::class, 'store'])
         ->name('categories.subcategories.store');
+    Route::put('categories/{category}/subcategories/{subcategory}', [SubcategoryController::class, 'update'])
+        ->name('categories.subcategories.update')
+        ->scopeBindings();
     Route::delete('categories/{category}/subcategories/{subcategory}', [SubcategoryController::class, 'destroy'])
         ->name('categories.subcategories.destroy')
         ->scopeBindings();

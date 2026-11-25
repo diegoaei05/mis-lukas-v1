@@ -63,17 +63,20 @@ A signed-in user files spending under categories they create, and under subcateg
 
 **Status:** Done
 
-**Story:** As a signed-in user, I want a Categories area where I can create a category and then create subcategories that belong to that category, so that later expenses can be filed the way a yogurt purchase is filed under Food and Super/Market.
+**Story:** As a signed-in user, I want a Categories area where I can create a category, update its name and color, and then create subcategories that belong to that category, so that later expenses can be filed the way a yogurt purchase is filed under Food and Super/Market.
 
 **Acceptance:**
 
 - A signed-in, verified user can open Categories from the main navigation.
-- They can create a category by name, and it appears in their list.
+- They can create a category by name and one of the five pill colors, and it appears in their list in that color.
+- They can update a chosen category's name and color after clicking Edit. The name and color fields stay hidden until then. The category keeps its subcategories. Saving its current name is allowed. A name they already use on another category is shown on the form and is not saved.
+- They can delete a chosen category that has no expenses. The trash icon asks for confirmation, then removes that category and its subcategories. A category that still has expenses stays.
 - They can create a subcategory by name on one of their categories, and it appears under that category only.
+- They can update a subcategory's name after clicking Edit. Saving its current name is allowed. A name that category already uses on another subcategory is shown on the row and is not saved.
 - A subcategory cannot be created without a category, and it cannot be attached to another user's category.
 - A guest who opens Categories is redirected to login.
-- An empty name, a duplicate category name for that user, or a duplicate subcategory name inside the same category is shown on the form and is not saved.
-- They can delete one of their subcategories when it has no expenses. The X removes that subcategory only.
+- An empty name, a missing or unknown color, a duplicate category name for that user, or a duplicate subcategory name inside the same category is shown on the form and is not saved.
+- They can delete one of their subcategories when it has no expenses. The trash icon asks for confirmation, then removes that subcategory only.
 
 ## Module: Expense Types
 
@@ -110,7 +113,7 @@ A signed-in user records a purchase and sees it in a table with the same columns
 
 - A signed-in, verified user can open Expenses from the main navigation.
 - They can record an expense with a month, a year, one of their expense types, a concept, and an amount in soles or in dollars. Category and subcategory are optional. Tab moves from concept to amount, and Enter saves the row so the next concept can be typed immediately.
-- The new row appears in their table. The amount shows under Soles or under Dólares, and the other currency column is empty. A missing category or subcategory shows a red `-`.
+- The new row appears in their table. The amount shows under Soles or under Dólares, and the other currency column is empty. An amount greater than 100 is a yellow pill, greater than 200 is an orange pill, and greater than 500 is a red pill. A missing category or subcategory shows a white `-`. A category with a stored color shows as a pill in that color.
 - Year buttons under the introduction choose which year's expenses are shown. A new expense is saved in the selected year. Mes shows the month. The pencil on a row changes that expense's month, type, concept, category, subcategory, currency, and amount in the row, and the type list shows the acronym. The trash icon deletes that expense after confirmation. The form above the table stays for the next new expense.
 - A guest who opens Expenses is redirected to login.
 - An empty concept, a missing amount, an amount in both currencies, a subcategory that does not belong to the chosen category, another user's category or subcategory, or another user's expense type is shown as an error and is not saved.
