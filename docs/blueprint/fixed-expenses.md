@@ -60,7 +60,7 @@ The create form posts through Wayfinder and uses the `createFixedExpense` error 
 
 Deleting the user deletes their fixed expenses and their payments. An expense type or a subcategory that still has a fixed expense cannot be deleted.
 
-| Table | Columns written by this module |
-| --- | --- |
-| `fixed_expenses` | `user_id`, `expense_type_id`, `subcategory_id`, `name`, `currency`, `amount` |
-| `fixed_expense_payments` | `fixed_expense_id`, `year`, `month`, `amount` |
+| Table                    | Columns written by this module                                               |
+| ------------------------ | ---------------------------------------------------------------------------- |
+| `fixed_expenses`         | `user_id`, `expense_type_id`, `subcategory_id`, `name`, `currency`, `amount` |
+| `fixed_expense_payments` | `fixed_expense_id`, `year`, `month`, `amount`                                |

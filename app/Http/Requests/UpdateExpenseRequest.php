@@ -1,0 +1,181 @@
+<?php
+
+namespace App\Http\Requests;
+
+use App\Enums\Currency;
+use App\Enums\Month;
+use App\Models\Category;
+use App\Models\Expense;
+use App\Models\ExpenseType;
+use App\Models\Subcategory;
+use Closure;
+use Illuminate\Auth\Access\Response;
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
+
+class UpdateExpenseRequest extends FormRequest
+{
+    private ?ExpenseType $resolvedExpenseType = null;
+
+    private ?Category $resolvedCategory = null;
+
+    private ?Subcategory $resolvedSubcategory = null;
+
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): Response
+    {
+        $expense = $this->route('expense');
+
+        if (! $expense instanceof Expense) {
+            return Response::denyAsNotFound();
+        }
+
+        return Gate::inspect('update', $expense);
+    }
+
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        $expense = $this->route('expense');
+
+        $this->errorBag = 'updateExpense-'.($expense instanceof Expense ? $expense->id : 'unknown');
+
+        $fields = [];
+
+        $concept = $this->input('concept');
+
+        if (is_string($concept)) {
+            $fields['concept'] = trim($concept);
+        }
+
+        $amount = $this->input('amount');
+
+        if (is_string($amount) && str_contains($amount, ',') && ! str_contains($amount, '.')) {
+            $fields['amount'] = str_replace(',', '.', trim($amount));
+        }
+
+        foreach (['category_id', 'subcategory_id'] as $field) {
+            if ($this->input($field) === '' || $this->input($field) === null) {
+                $fields[$field] = null;
+            }
+        }
+
+        if ($fields !== []) {
+            $this->merge($fields);
+        }
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'month' => ['required', Rule::enum(Month::class)],
+            'year' => ['required', 'integer', 'between:2000,2100'],
+            'expense_type_id' => ['required', 'integer'],
+            'category_id' => ['nullable', 'integer'],
+            'subcategory_id' => ['nullable', 'integer'],
+            'concept' => ['required', 'string', 'max:255'],
+            'currency' => ['required', 'string', Rule::enum(Currency::class)],
+            'amount' => ['required', 'numeric', 'gt:0', 'decimal:0,2', 'max:9999999999.99'],
+        ];
+    }
+
+    /**
+     * The signed-in user's expense type chosen for this expense.
+     */
+    public function expenseType(): ExpenseType
+    {
+        if ($this->resolvedExpenseType === null) {
+            abort(404);
+        }
+
+        return $this->resolvedExpenseType;
+    }
+
+    /**
+     * The signed-in user's category, when one was chosen.
+     */
+    public function category(): ?Category
+    {
+        return $this->resolvedCategory;
+    }
+
+    /**
+     * The signed-in user's subcategory, when one was chosen.
+     */
+    public function subcategory(): ?Subcategory
+    {
+        return $this->resolvedSubcategory;
+    }
+
+    /**
+     * Reject a type, category, or subcategory the user does not own.
+     *
+     * @return array<int, Closure>
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                if ($validator->errors()->isNotEmpty()) {
+                    return;
+                }
+
+                $user = $this->user();
+
+                $expenseType = $user?->expenseTypes()->find($this->integer('expense_type_id'));
+
+                if (! $expenseType instanceof ExpenseType) {
+                    abort(404);
+                }
+
+                $category = null;
+
+                if ($this->filled('category_id')) {
+                    $category = $user?->categories()->find($this->integer('category_id'));
+
+                    if (! $category instanceof Category) {
+                        abort(404);
+                    }
+                }
+
+                $subcategory = null;
+
+                if ($this->filled('subcategory_id')) {
+                    $subcategory = Subcategory::query()
+                        ->whereKey($this->integer('subcategory_id'))
+                        ->whereHas('category', fn ($query) => $query->where('user_id', $user?->id))
+                        ->first();
+
+                    if (! $subcategory instanceof Subcategory) {
+                        abort(404);
+                    }
+
+                    if ($category === null || $subcategory->category_id !== $category->id) {
+                        $validator->errors()->add(
+                            'subcategory_id',
+                            'The subcategory does not belong to the selected category.',
+                        );
+
+                        return;
+                    }
+                }
+
+                $this->resolvedExpenseType = $expenseType;
+                $this->resolvedCategory = $category;
+                $this->resolvedSubcategory = $subcategory;
+            },
+        ];
+    }
+}

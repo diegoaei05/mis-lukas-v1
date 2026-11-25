@@ -109,10 +109,11 @@ A signed-in user records a purchase and sees it in a table with the same columns
 **Acceptance:**
 
 - A signed-in, verified user can open Expenses from the main navigation.
-- They can record an expense with a month, a year, one of their expense types, a concept, one of their categories, a subcategory of that category, and an amount in soles or in dollars.
-- The new row appears in their table. The amount shows under Soles or under Dólares, and the other currency column is empty.
+- They can record an expense with a month, a year, one of their expense types, a concept, and an amount in soles or in dollars. Category and subcategory are optional. Tab moves from concept to amount, and Enter saves the row so the next concept can be typed immediately.
+- The new row appears in their table. The amount shows under Soles or under Dólares, and the other currency column is empty. A missing category or subcategory shows a red `-`.
+- Year buttons under the introduction choose which year's expenses are shown. A new expense is saved in the selected year. Mes shows the month. The pencil on a row changes that expense's month, type, concept, category, subcategory, currency, and amount in the row, and the type list shows the acronym. The trash icon deletes that expense after confirmation. The form above the table stays for the next new expense.
 - A guest who opens Expenses is redirected to login.
-- An empty concept, a missing amount, an amount in both currencies, a subcategory that does not belong to the chosen category, another user's subcategory, or another user's expense type is shown as an error and is not saved.
+- An empty concept, a missing amount, an amount in both currencies, a subcategory that does not belong to the chosen category, another user's category or subcategory, or another user's expense type is shown as an error and is not saved.
 
 ## Module: Fixed expenses
 
@@ -161,4 +162,3 @@ The year view of fixed bills, with variable expenses underneath. Recording a bil
 - An expense from another year is left out.
 - A guest who opens General Report is redirected to login.
 - Another user's bills and variable expenses are not included.
-

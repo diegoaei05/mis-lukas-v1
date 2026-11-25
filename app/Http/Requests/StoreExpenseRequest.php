@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\Currency;
 use App\Enums\Month;
+use App\Models\Category;
 use App\Models\ExpenseType;
 use App\Models\Subcategory;
 use Closure;
@@ -15,6 +16,8 @@ use Illuminate\Validation\Validator;
 class StoreExpenseRequest extends FormRequest
 {
     private ?ExpenseType $resolvedExpenseType = null;
+
+    private ?Category $resolvedCategory = null;
 
     private ?Subcategory $resolvedSubcategory = null;
 
@@ -47,6 +50,12 @@ class StoreExpenseRequest extends FormRequest
             $fields['amount'] = str_replace(',', '.', trim($amount));
         }
 
+        foreach (['category_id', 'subcategory_id'] as $field) {
+            if ($this->input($field) === '' || $this->input($field) === null) {
+                $fields[$field] = null;
+            }
+        }
+
         if ($fields !== []) {
             $this->merge($fields);
         }
@@ -63,8 +72,8 @@ class StoreExpenseRequest extends FormRequest
             'month' => ['required', Rule::enum(Month::class)],
             'year' => ['required', 'integer', 'between:2000,2100'],
             'expense_type_id' => ['required', 'integer'],
-            'category_id' => ['required', 'integer'],
-            'subcategory_id' => ['required', 'integer'],
+            'category_id' => ['nullable', 'integer'],
+            'subcategory_id' => ['nullable', 'integer'],
             'concept' => ['required', 'string', 'max:255'],
             'currency' => ['required', 'string', Rule::enum(Currency::class)],
             'amount' => ['required', 'numeric', 'gt:0', 'decimal:0,2', 'max:9999999999.99'],
@@ -84,14 +93,18 @@ class StoreExpenseRequest extends FormRequest
     }
 
     /**
-     * The signed-in user's subcategory chosen for this expense.
+     * The signed-in user's category, when one was chosen.
      */
-    public function subcategory(): Subcategory
+    public function category(): ?Category
     {
-        if ($this->resolvedSubcategory === null) {
-            abort(404);
-        }
+        return $this->resolvedCategory;
+    }
 
+    /**
+     * The signed-in user's subcategory, when one was chosen.
+     */
+    public function subcategory(): ?Subcategory
+    {
         return $this->resolvedSubcategory;
     }
 
@@ -111,26 +124,45 @@ class StoreExpenseRequest extends FormRequest
                 $user = $this->user();
 
                 $expenseType = $user?->expenseTypes()->find($this->integer('expense_type_id'));
-                $category = $user?->categories()->find($this->integer('category_id'));
-                $subcategory = Subcategory::query()
-                    ->whereKey($this->integer('subcategory_id'))
-                    ->whereHas('category', fn ($query) => $query->where('user_id', $user?->id))
-                    ->first();
 
-                if (! $expenseType instanceof ExpenseType || $category === null || $subcategory === null) {
+                if (! $expenseType instanceof ExpenseType) {
                     abort(404);
                 }
 
-                if ($subcategory->category_id !== $category->id) {
-                    $validator->errors()->add(
-                        'subcategory_id',
-                        'The subcategory does not belong to the selected category.',
-                    );
+                $category = null;
 
-                    return;
+                if ($this->filled('category_id')) {
+                    $category = $user?->categories()->find($this->integer('category_id'));
+
+                    if (! $category instanceof Category) {
+                        abort(404);
+                    }
+                }
+
+                $subcategory = null;
+
+                if ($this->filled('subcategory_id')) {
+                    $subcategory = Subcategory::query()
+                        ->whereKey($this->integer('subcategory_id'))
+                        ->whereHas('category', fn ($query) => $query->where('user_id', $user?->id))
+                        ->first();
+
+                    if (! $subcategory instanceof Subcategory) {
+                        abort(404);
+                    }
+
+                    if ($category === null || $subcategory->category_id !== $category->id) {
+                        $validator->errors()->add(
+                            'subcategory_id',
+                            'The subcategory does not belong to the selected category.',
+                        );
+
+                        return;
+                    }
                 }
 
                 $this->resolvedExpenseType = $expenseType;
+                $this->resolvedCategory = $category;
                 $this->resolvedSubcategory = $subcategory;
             },
         ];

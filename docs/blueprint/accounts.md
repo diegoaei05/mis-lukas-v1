@@ -74,10 +74,10 @@ POST /register
 
 Validation rules:
 
-| Field | Rules | Defined in |
-| --- | --- | --- |
-| `name` | required, string, max 255 | `App\Concerns\ProfileValidationRules` |
-| `email` | required, string, email, max 255, unique on `User` | `App\Concerns\ProfileValidationRules` |
+| Field      | Rules                                              | Defined in                             |
+| ---------- | -------------------------------------------------- | -------------------------------------- |
+| `name`     | required, string, max 255                          | `App\Concerns\ProfileValidationRules`  |
+| `email`    | required, string, email, max 255, unique on `User` | `App\Concerns\ProfileValidationRules`  |
 | `password` | required, string, `Password::default()`, confirmed | `App\Concerns\PasswordValidationRules` |
 
 `password_confirmation` is required by the `confirmed` rule. It is not a column.
@@ -107,18 +107,18 @@ After the insert, Fortify fires `Illuminate\Auth\Events\Registered`, logs the us
 
 Created by `database/migrations/0001_01_01_000000_create_users_table.php`, then extended by `database/migrations/2025_08_14_170933_add_two_factor_columns_to_users_table.php`.
 
-| Column | Set at registration |
-| --- | --- |
-| `id` | database |
-| `name` | form |
-| `email` | form, lowercased, unique |
-| `email_verified_at` | null until the address is verified |
-| `password` | form, stored hashed |
-| `two_factor_secret` | null |
-| `two_factor_recovery_codes` | null |
-| `two_factor_confirmed_at` | null |
-| `remember_token` | null |
-| `created_at`, `updated_at` | database |
+| Column                      | Set at registration                |
+| --------------------------- | ---------------------------------- |
+| `id`                        | database                           |
+| `name`                      | form                               |
+| `email`                     | form, lowercased, unique           |
+| `email_verified_at`         | null until the address is verified |
+| `password`                  | form, stored hashed                |
+| `two_factor_secret`         | null                               |
+| `two_factor_recovery_codes` | null                               |
+| `two_factor_confirmed_at`   | null                               |
+| `remember_token`            | null                               |
+| `created_at`, `updated_at`  | database                           |
 
 `password_reset_tokens` and `sessions` are created in the same migration. Registration writes the session through the login call. It does not write a password reset token.
 

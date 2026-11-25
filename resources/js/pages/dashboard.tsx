@@ -1,12 +1,5 @@
 import { Head, router } from '@inertiajs/react';
-import {
-    BarElement,
-    CategoryScale,
-    Chart as ChartJS,
-    Legend,
-    LinearScale,
-    Tooltip,
-} from 'chart.js';
+import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Tooltip } from 'chart.js';
 import { useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Input } from '@/components/ui/input';
@@ -30,19 +23,7 @@ function formatAmount(amount: number): string {
     });
 }
 
-function StackedCurrencyChart({
-    title,
-    year,
-    currency,
-    fixedMonths,
-    variableMonths,
-}: {
-    title: string;
-    year: number;
-    currency: 'soles' | 'dollars';
-    fixedMonths: MonthTotal[];
-    variableMonths: MonthTotal[];
-}) {
+function StackedCurrencyChart({ title, year, currency, fixedMonths, variableMonths }: { title: string; year: number; currency: 'soles' | 'dollars'; fixedMonths: MonthTotal[]; variableMonths: MonthTotal[] }) {
     const { resolvedAppearance } = useAppearance();
     const isDark = resolvedAppearance === 'dark';
     const text = isDark ? '#e4e4e7' : '#3f3f46';
@@ -55,18 +36,12 @@ function StackedCurrencyChart({
         <section className="rounded-xl border border-border bg-card p-4">
             <h3 className="mb-4 text-base font-semibold">{title}</h3>
 
-            {!hasExpenses && (
-                <p className="mb-4 text-sm text-muted-foreground">
-                    No {title.toLowerCase()} for this year.
-                </p>
-            )}
+            {!hasExpenses && <p className="mb-4 text-sm text-muted-foreground">No {title.toLowerCase()} for this year.</p>}
 
             <div className="h-80">
                 <Bar
                     data={{
-                        labels: fixedMonths.map((month) =>
-                            month.label.slice(0, 3),
-                        ),
+                        labels: fixedMonths.map((month) => month.label.slice(0, 3)),
                         datasets: [
                             {
                                 label: 'Fijos',
@@ -93,11 +68,8 @@ function StackedCurrencyChart({
                             },
                             tooltip: {
                                 callbacks: {
-                                    title: (items) =>
-                                        fixedMonths[items[0]?.dataIndex ?? 0]
-                                            ?.label ?? '',
-                                    label: (item) =>
-                                        `${item.dataset.label}: ${formatAmount(Number(item.raw))}`,
+                                    title: (items) => fixedMonths[items[0]?.dataIndex ?? 0]?.label ?? '',
+                                    label: (item) => `${item.dataset.label}: ${formatAmount(Number(item.raw))}`,
                                 },
                             },
                         },
@@ -136,15 +108,7 @@ function showYear(nextYear: string): void {
     );
 }
 
-export default function Dashboard({
-    year,
-    fixedMonths,
-    variableMonths,
-}: {
-    year: number;
-    fixedMonths: MonthTotal[];
-    variableMonths: MonthTotal[];
-}) {
+export default function Dashboard({ year, fixedMonths, variableMonths }: { year: number; fixedMonths: MonthTotal[]; variableMonths: MonthTotal[] }) {
     const [periodYear, setPeriodYear] = useState(String(year));
 
     useEffect(() => {
@@ -157,13 +121,8 @@ export default function Dashboard({
 
             <div className="flex h-full flex-1 flex-col gap-6 p-4">
                 <div className="flex flex-col gap-0.5">
-                    <h2 className="text-xl font-semibold tracking-tight">
-                        Dashboard
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                        Each month is one bar. Fixed bills sit on the bottom
-                        and variable expenses sit on top.
-                    </p>
+                    <h2 className="text-xl font-semibold tracking-tight">Dashboard</h2>
+                    <p className="text-sm text-muted-foreground">Each month is one bar. Fixed bills sit on the bottom and variable expenses sit on top.</p>
                 </div>
 
                 <div className="grid max-w-xs gap-2">
@@ -179,12 +138,7 @@ export default function Dashboard({
                         onBlur={() => {
                             const nextYear = Number(periodYear);
 
-                            if (
-                                Number.isInteger(nextYear) &&
-                                nextYear >= 2000 &&
-                                nextYear <= 2100 &&
-                                nextYear !== year
-                            ) {
+                            if (Number.isInteger(nextYear) && nextYear >= 2000 && nextYear <= 2100 && nextYear !== year) {
                                 showYear(String(nextYear));
 
                                 return;
@@ -200,20 +154,8 @@ export default function Dashboard({
                     />
                 </div>
 
-                <StackedCurrencyChart
-                    title="Soles"
-                    year={year}
-                    currency="soles"
-                    fixedMonths={fixedMonths}
-                    variableMonths={variableMonths}
-                />
-                <StackedCurrencyChart
-                    title="Dólares"
-                    year={year}
-                    currency="dollars"
-                    fixedMonths={fixedMonths}
-                    variableMonths={variableMonths}
-                />
+                <StackedCurrencyChart title="Soles" year={year} currency="soles" fixedMonths={fixedMonths} variableMonths={variableMonths} />
+                <StackedCurrencyChart title="Dólares" year={year} currency="dollars" fixedMonths={fixedMonths} variableMonths={variableMonths} />
             </div>
         </>
     );

@@ -134,7 +134,9 @@ class GeneralReportController extends Controller
      */
     private function variableGroups(Collection $categories, Collection $expenses): array
     {
-        $expensesBySubcategory = $expenses->groupBy('subcategory_id');
+        $expensesBySubcategory = $expenses
+            ->filter(fn (Expense $expense): bool => $expense->subcategory_id !== null)
+            ->groupBy('subcategory_id');
 
         return $categories
             ->filter(fn (Category $category): bool => $category->subcategories->isNotEmpty())

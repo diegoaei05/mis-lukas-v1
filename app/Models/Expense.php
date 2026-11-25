@@ -15,7 +15,8 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $user_id
  * @property int $expense_type_id
- * @property int $subcategory_id
+ * @property int|null $category_id
+ * @property int|null $subcategory_id
  * @property Month $month
  * @property int $year
  * @property string $concept
@@ -59,6 +60,14 @@ class Expense extends Model
     public function expenseType(): BelongsTo
     {
         return $this->belongsTo(ExpenseType::class);
+    }
+
+    /**
+     * Get the category chosen when no subcategory was filed.
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
     }
 
     /**

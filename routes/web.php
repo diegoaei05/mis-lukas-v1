@@ -16,7 +16,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('categories', CategoryController::class)->only(['index', 'store']);
     Route::resource('expense-types', ExpenseTypeController::class)->only(['index', 'store']);
-    Route::resource('expenses', ExpenseController::class)->only(['index', 'store']);
+    Route::resource('expenses', ExpenseController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('fixed-expenses', FixedExpenseController::class)
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['fixed-expenses' => 'fixedExpense']);

@@ -45,7 +45,7 @@ The forms post through Wayfinder. The category form uses the `createCategory` er
 
 `categories.name` is unique per user. `subcategories.name` is unique inside its category, including differences of letter case. `name` is the only fillable attribute, so a submitted `user_id` is ignored and the row is owned by the signed-in user. Deleting a user deletes their categories, and deleting a category deletes its subcategories.
 
-| Table | Columns written by this module |
-| --- | --- |
-| `categories` | `user_id`, `name` |
-| `subcategories` | `category_id`, `name` |
+| Table           | Columns written by this module |
+| --------------- | ------------------------------ |
+| `categories`    | `user_id`, `name`              |
+| `subcategories` | `category_id`, `name`          |

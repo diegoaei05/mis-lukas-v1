@@ -23,16 +23,16 @@ Each new file contains: **ID**, **Status** (`Needs confirmation`, `Agreed`, or `
 
 ## Completed
 
-| ID                                               | Summary                                                            | Status |
-| ------------------------------------------------ | ------------------------------------------------------------------ | ------ |
-| [US-ACC-01](user-stories/completed.md#us-acc-01) | A visitor can open the registration page.                          | Done   |
-| [US-ACC-02](user-stories/completed.md#us-acc-02) | A visitor can submit name, email, and password and get an account. | Done   |
-| [US-ACC-03](user-stories/completed.md#us-acc-03) | Invalid registration input stays on the form with field errors.    | Done   |
-| [US-CAT-01](user-stories/completed.md#us-cat-01) | A signed-in user can create a category and add subcategories that belong to it. | Done |
-| [US-TYP-01](user-stories/completed.md#us-typ-01) | A signed-in user can create an expense type with an acronym and a description. | Done |
-| [US-EXP-01](user-stories/completed.md#us-exp-01) | A signed-in user can record an expense and see it in a table like the spreadsheet. | Done |
-| [US-FIX-01](user-stories/completed.md#us-fix-01) | A signed-in user can describe a recurring bill once and mark it paid for a chosen month. | Done |
-| [US-RPT-01](user-stories/completed.md#us-rpt-01) | A signed-in user can open a general report of fixed bills for the year, with variable expenses underneath. | Done |
+| ID                                               | Summary                                                                                                    | Status |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | ------ |
+| [US-ACC-01](user-stories/completed.md#us-acc-01) | A visitor can open the registration page.                                                                  | Done   |
+| [US-ACC-02](user-stories/completed.md#us-acc-02) | A visitor can submit name, email, and password and get an account.                                         | Done   |
+| [US-ACC-03](user-stories/completed.md#us-acc-03) | Invalid registration input stays on the form with field errors.                                            | Done   |
+| [US-CAT-01](user-stories/completed.md#us-cat-01) | A signed-in user can create a category and add subcategories that belong to it.                            | Done   |
+| [US-TYP-01](user-stories/completed.md#us-typ-01) | A signed-in user can create an expense type with an acronym and a description.                             | Done   |
+| [US-EXP-01](user-stories/completed.md#us-exp-01) | A signed-in user can record an expense and see it in a table like the spreadsheet.                         | Done   |
+| [US-FIX-01](user-stories/completed.md#us-fix-01) | A signed-in user can describe a recurring bill once and mark it paid for a chosen month.                   | Done   |
+| [US-RPT-01](user-stories/completed.md#us-rpt-01) | A signed-in user can open a general report of fixed bills for the year, with variable expenses underneath. | Done   |
 
 ## New
 

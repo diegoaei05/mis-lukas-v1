@@ -32,4 +32,20 @@ class ExpenseFactory extends Factory
             'amount' => fake()->randomFloat(2, 1, 500),
         ];
     }
+
+    /**
+     * Keep the stored category aligned with the chosen subcategory.
+     */
+    public function configure(): static
+    {
+        return $this->afterMaking(function (Expense $expense): void {
+            if ($expense->category_id !== null || $expense->subcategory_id === null) {
+                return;
+            }
+
+            $expense->category_id = Subcategory::query()
+                ->whereKey($expense->subcategory_id)
+                ->value('category_id');
+        });
+    }
 }

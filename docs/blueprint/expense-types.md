@@ -31,6 +31,6 @@ The form posts through Wayfinder and uses the `createExpenseType` error bag. A s
 
 `acronym` and `description` are the only fillable attributes, so a submitted `user_id` is ignored and the row is owned by the signed-in user. The same acronym is allowed on another user's account. Deleting a user deletes their expense types.
 
-| Table | Columns written by this module |
-| --- | --- |
+| Table           | Columns written by this module      |
+| --------------- | ----------------------------------- |
 | `expense_types` | `user_id`, `acronym`, `description` |
