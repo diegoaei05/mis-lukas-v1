@@ -63,8 +63,8 @@ const headerCell = 'border border-solid border-stone-300 bg-stone-200 text-stone
 function amountClass(tone: 'bill' | 'total' | 'grand', paid = false, changed = false, monthEnd = false): string {
     return cn(
         'border border-border px-2 py-1.5 text-right whitespace-nowrap tabular-nums',
-        tone === 'total' && 'bg-[#8f7628] font-semibold text-[#f6ecc8]',
-        tone === 'grand' && 'bg-[#6f5b1e] font-semibold text-[#f6ecc8]',
+        tone === 'total' && 'bg-total font-semibold text-total-foreground',
+        tone === 'grand' && 'bg-grand-total font-semibold text-total-foreground',
         tone === 'bill' && paid && !changed && 'bg-emerald-600/15',
         tone === 'bill' && changed && 'bg-amber-400/40',
         monthEnd && monthEdge,
@@ -199,7 +199,7 @@ export default function GeneralReportIndex({ groups, totals, variableGroups, var
                                             </tr>
                                         ))}
                                         <tr>
-                                            <th className="sticky left-0 z-10 border border-border bg-[#8f7628] px-3 py-1.5 text-left font-semibold text-[#f6ecc8]">Total</th>
+                                            <th className="sticky left-0 z-10 border border-border bg-total px-3 py-1.5 text-left font-semibold text-total-foreground">Total</th>
                                             {group.totals.map((cell) => (
                                                 <Fragment key={cell.month}>
                                                     <td className={amountClass('total')}>{formatAmount(cell.soles)}</td>
@@ -212,7 +212,7 @@ export default function GeneralReportIndex({ groups, totals, variableGroups, var
                             )}
                             {groups.length > 0 && (
                                 <tr>
-                                    <th className="sticky left-0 z-10 border border-border bg-[#6f5b1e] px-3 py-2 text-left font-semibold text-[#f6ecc8]">Total fijos</th>
+                                    <th className="sticky left-0 z-10 border border-border bg-grand-total px-3 py-2 text-left font-semibold text-total-foreground">Total fijos</th>
                                     {totals.map((cell) => (
                                         <Fragment key={cell.month}>
                                             <td className={amountClass('grand')}>{formatAmount(cell.soles)}</td>
@@ -260,7 +260,7 @@ export default function GeneralReportIndex({ groups, totals, variableGroups, var
                                             </tr>
                                         ))}
                                         <tr>
-                                            <th className="sticky left-0 z-10 border border-border bg-[#8f7628] px-3 py-1.5 text-left font-semibold text-[#f6ecc8]">Total</th>
+                                            <th className="sticky left-0 z-10 border border-border bg-total px-3 py-1.5 text-left font-semibold text-total-foreground">Total</th>
                                             {group.totals.map((cell) => (
                                                 <Fragment key={cell.month}>
                                                     <td className={amountClass('total')}>{formatAmount(cell.soles)}</td>
@@ -273,7 +273,7 @@ export default function GeneralReportIndex({ groups, totals, variableGroups, var
                             )}
                             {variableGroups.length > 0 && (
                                 <tr>
-                                    <th className="sticky left-0 z-10 border border-border bg-[#6f5b1e] px-3 py-2 text-left font-semibold text-[#f6ecc8]">Total variables</th>
+                                    <th className="sticky left-0 z-10 border border-border bg-grand-total px-3 py-2 text-left font-semibold text-total-foreground">Total variables</th>
                                     {variableTotals.map((cell) => (
                                         <Fragment key={cell.month}>
                                             <td className={amountClass('grand')}>{formatAmount(cell.soles)}</td>
