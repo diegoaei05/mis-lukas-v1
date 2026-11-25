@@ -1,5 +1,6 @@
 import { Form, Head, Link, router, useForm } from '@inertiajs/react';
-import { Check, Pencil, Trash2, X } from 'lucide-react';
+import { Check, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import ExpenseController, { update } from '@/actions/App/Http/Controllers/ExpenseController';
 import InputError from '@/components/input-error';
@@ -172,14 +173,18 @@ export default function ExpensesIndex({ year, years, expenses, filters, paginati
         };
     }
 
+    const requestedConcept = useRef(filters.concept);
+    const hasFilters = filters.concept !== '' || filters.months.length > 0;
+
     function visit(overrides: { year?: number; concept?: string; months?: number[]; per_page?: number; page?: number }) {
+        requestedConcept.current = overrides.concept ?? filters.concept;
         router.get(index.url({ query: listQuery(overrides) }), {}, { preserveScroll: true, preserveState: true, replace: true });
     }
 
     useEffect(() => {
         const nextConcept = conceptDraft.trim();
 
-        if (nextConcept === filters.concept) {
+        if (nextConcept === filters.concept || nextConcept === requestedConcept.current) {
             return;
         }
 
@@ -258,186 +263,459 @@ export default function ExpensesIndex({ year, years, expenses, filters, paginati
             <Head title="Expenses" />
 
             <div className="flex h-full flex-1 flex-col gap-6 p-4">
-                <div className="flex flex-col gap-0.5">
-                    <h2 className="text-xl font-semibold tracking-tight">Expenses</h2>
-                    <p className="text-sm text-muted-foreground">Record a purchase with its concept and amount. Category and subcategory are optional. Edit a row to change any of its fields.</p>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div className="flex flex-col gap-0.5">
+                        <h2 className="text-xl font-semibold tracking-tight">Expenses</h2>
+                        <p className="text-sm text-muted-foreground">Record a purchase, then review and filter the year below.</p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2" role="group" aria-label="Year">
+                        {years.map((option) => (
+                            <Button key={option} variant={option === year ? 'default' : 'outline'} size="sm" asChild>
+                                <Link href={index({ query: listQuery({ year: option }) })} preserveScroll aria-current={option === year ? 'page' : undefined}>
+                                    {option}
+                                </Link>
+                            </Button>
+                        ))}
+                    </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2" role="group" aria-label="Year">
-                    {years.map((option) => (
-                        <Button key={option} variant={option === year ? 'default' : 'outline'} size="sm" asChild>
-                            <Link href={index({ query: listQuery({ year: option }) })} preserveScroll aria-current={option === year ? 'page' : undefined}>
-                                {option}
-                            </Link>
-                        </Button>
-                    ))}
-                </div>
+                <section className="rounded-xl border border-border bg-card" aria-labelledby="new-expense-heading">
+                    <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+                        <span className="flex size-6 items-center justify-center rounded-md bg-emerald-600 text-white">
+                            <Plus className="size-4" />
+                        </span>
+                        <h3 id="new-expense-heading" className="text-sm font-semibold">
+                            New expense
+                        </h3>
+                        <span className="text-xs text-muted-foreground">· saved in {year}</span>
+                    </div>
+                    <div className="p-4">
+                        {canRecord ? (
+                            <Form
+                                {...ExpenseController.store.form()}
+                                errorBag="createExpense"
+                                resetOnSuccess={['concept', 'amount']}
+                                disableWhileProcessing
+                                onSuccess={() => {
+                                    window.setTimeout(() => {
+                                        conceptRef.current?.focus();
+                                    }, 0);
+                                }}
+                                className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(5,minmax(0,1fr))_auto]"
+                            >
+                                {({ errors, processing }) => (
+                                    <>
+                                        <input type="hidden" name="month" value={month} />
+                                        <input type="hidden" name="year" value={year} />
+                                        <input type="hidden" name="expense_type_id" value={expenseTypeId} />
+                                        <input type="hidden" name="category_id" value={categoryId} />
+                                        <input type="hidden" name="subcategory_id" value={subcategoryId} />
+                                        <input type="hidden" name="currency" value={currency} />
 
-                {canRecord ? (
-                    <Form
-                        {...ExpenseController.store.form()}
-                        errorBag="createExpense"
-                        resetOnSuccess={['concept', 'amount']}
-                        disableWhileProcessing
-                        onSuccess={() => {
-                            window.setTimeout(() => {
-                                conceptRef.current?.focus();
-                            }, 0);
-                        }}
-                        className="grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-4"
-                    >
-                        {({ errors, processing }) => (
-                            <>
-                                <input type="hidden" name="month" value={month} />
-                                <input type="hidden" name="year" value={year} />
-                                <input type="hidden" name="expense_type_id" value={expenseTypeId} />
-                                <input type="hidden" name="category_id" value={categoryId} />
-                                <input type="hidden" name="subcategory_id" value={subcategoryId} />
-                                <input type="hidden" name="currency" value={currency} />
+                                        <div className="grid gap-2 sm:col-span-2 lg:col-span-3">
+                                            <Label htmlFor="expense-concept">Concept</Label>
+                                            <Input ref={conceptRef} id="expense-concept" name="concept" required autoFocus maxLength={255} placeholder="Koanna - Rest" data-test="expense-concept" />
+                                            <InputError message={errors.concept} />
+                                        </div>
 
-                                <div className="grid gap-2 sm:col-span-2">
-                                    <Label htmlFor="expense-concept">Concept</Label>
-                                    <Input ref={conceptRef} id="expense-concept" name="concept" required autoFocus maxLength={255} placeholder="Koanna - Rest" data-test="expense-concept" />
-                                    <InputError message={errors.concept} />
-                                </div>
+                                        <div className="grid gap-2 lg:col-span-2">
+                                            <Label htmlFor="expense-amount">Amount</Label>
+                                            <Input id="expense-amount" name="amount" type="text" inputMode="decimal" required placeholder="47.00" data-test="expense-amount" />
+                                            <InputError message={errors.amount} />
+                                        </div>
 
-                                <div className="grid gap-2">
-                                    <Label htmlFor="expense-amount">Amount</Label>
-                                    <Input id="expense-amount" name="amount" type="text" inputMode="decimal" required placeholder="47.00" data-test="expense-amount" />
-                                    <InputError message={errors.amount} />
-                                </div>
+                                        <div className="flex items-end">
+                                            <Button type="submit" disabled={processing} data-test="create-expense-button">
+                                                Add expense
+                                            </Button>
+                                        </div>
 
-                                <div className="flex items-end">
-                                    <Button type="submit" disabled={processing} data-test="create-expense-button">
-                                        Add expense
-                                    </Button>
-                                </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="expense-month">Month</Label>
+                                            <Select value={month} onValueChange={setMonth}>
+                                                <SelectTrigger id="expense-month" className="w-full">
+                                                    <SelectValue placeholder="Month" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {months.map((option) => (
+                                                        <SelectItem key={option.value} value={String(option.value)}>
+                                                            {option.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <InputError message={errors.month} />
+                                        </div>
 
-                                <div className="grid gap-2">
-                                    <Label htmlFor="expense-month">Month</Label>
-                                    <Select value={month} onValueChange={setMonth}>
-                                        <SelectTrigger id="expense-month" className="w-full">
-                                            <SelectValue placeholder="Month" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {months.map((option) => (
-                                                <SelectItem key={option.value} value={String(option.value)}>
-                                                    {option.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError message={errors.month} />
-                                </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="expense-type">Type</Label>
+                                            <Select value={expenseTypeId} onValueChange={setExpenseTypeId}>
+                                                <SelectTrigger id="expense-type" className="w-full">
+                                                    <SelectValue placeholder="Type" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {expenseTypes.map((expenseType) => (
+                                                        <SelectItem key={expenseType.id} value={String(expenseType.id)}>
+                                                            {expenseType.acronym} — {expenseType.description}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <InputError message={errors.expense_type_id} />
+                                        </div>
 
-                                <div className="grid gap-2">
-                                    <Label htmlFor="expense-type">Type</Label>
-                                    <Select value={expenseTypeId} onValueChange={setExpenseTypeId}>
-                                        <SelectTrigger id="expense-type" className="w-full">
-                                            <SelectValue placeholder="Type" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {expenseTypes.map((expenseType) => (
-                                                <SelectItem key={expenseType.id} value={String(expenseType.id)}>
-                                                    {expenseType.acronym} — {expenseType.description}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError message={errors.expense_type_id} />
-                                </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="expense-currency">Currency</Label>
+                                            <Select value={currency} onValueChange={setCurrency}>
+                                                <SelectTrigger id="expense-currency" className="w-full">
+                                                    <SelectValue placeholder="Currency" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {currencies.map((option) => (
+                                                        <SelectItem key={option.value} value={option.value}>
+                                                            {option.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <InputError message={errors.currency} />
+                                        </div>
 
-                                <div className="grid gap-2">
-                                    <Label htmlFor="expense-currency">Currency</Label>
-                                    <Select value={currency} onValueChange={setCurrency}>
-                                        <SelectTrigger id="expense-currency" className="w-full">
-                                            <SelectValue placeholder="Currency" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {currencies.map((option) => (
-                                                <SelectItem key={option.value} value={option.value}>
-                                                    {option.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError message={errors.currency} />
-                                </div>
+                                        <div className="grid gap-2 sm:col-start-1 lg:col-start-auto">
+                                            <Label htmlFor="expense-category">
+                                                Category
+                                                <span className="font-normal text-muted-foreground"> (optional)</span>
+                                            </Label>
+                                            <Select
+                                                value={categoryId === '' ? emptyChoice : categoryId}
+                                                onValueChange={(value) => {
+                                                    setCategoryId(value === emptyChoice ? '' : value);
+                                                }}
+                                            >
+                                                <SelectTrigger id="expense-category" className="w-full">
+                                                    <SelectValue placeholder="Optional" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value={emptyChoice}>Optional</SelectItem>
+                                                    {categories.map((category) => (
+                                                        <SelectItem key={category.id} value={String(category.id)}>
+                                                            {category.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <InputError message={errors.category_id} />
+                                        </div>
 
-                                <div className="grid gap-2 sm:col-start-1">
-                                    <Label htmlFor="expense-category">
-                                        Category
-                                        <span className="font-normal text-muted-foreground"> (optional)</span>
-                                    </Label>
-                                    <Select
-                                        value={categoryId === '' ? emptyChoice : categoryId}
-                                        onValueChange={(value) => {
-                                            setCategoryId(value === emptyChoice ? '' : value);
-                                        }}
-                                    >
-                                        <SelectTrigger id="expense-category" className="w-full">
-                                            <SelectValue placeholder="Optional" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value={emptyChoice}>Optional</SelectItem>
-                                            {categories.map((category) => (
-                                                <SelectItem key={category.id} value={String(category.id)}>
-                                                    {category.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError message={errors.category_id} />
-                                </div>
-
-                                <div className="grid gap-2">
-                                    <Label htmlFor="expense-subcategory">
-                                        Subcategory
-                                        <span className="font-normal text-muted-foreground"> (optional)</span>
-                                    </Label>
-                                    <Select
-                                        value={subcategoryId === '' ? emptyChoice : subcategoryId}
-                                        onValueChange={(value) => {
-                                            setSubcategoryId(value === emptyChoice ? '' : value);
-                                        }}
-                                        disabled={categoryId === ''}
-                                    >
-                                        <SelectTrigger id="expense-subcategory" className="w-full">
-                                            <SelectValue placeholder="Optional" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value={emptyChoice}>Optional</SelectItem>
-                                            {subcategories.map((subcategory) => (
-                                                <SelectItem key={subcategory.id} value={String(subcategory.id)}>
-                                                    {subcategory.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError message={errors.subcategory_id} />
-                                </div>
-                            </>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="expense-subcategory">
+                                                Subcategory
+                                                <span className="font-normal text-muted-foreground"> (optional)</span>
+                                            </Label>
+                                            <Select
+                                                value={subcategoryId === '' ? emptyChoice : subcategoryId}
+                                                onValueChange={(value) => {
+                                                    setSubcategoryId(value === emptyChoice ? '' : value);
+                                                }}
+                                                disabled={categoryId === ''}
+                                            >
+                                                <SelectTrigger id="expense-subcategory" className="w-full">
+                                                    <SelectValue placeholder="Optional" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value={emptyChoice}>Optional</SelectItem>
+                                                    {subcategories.map((subcategory) => (
+                                                        <SelectItem key={subcategory.id} value={String(subcategory.id)}>
+                                                            {subcategory.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <InputError message={errors.subcategory_id} />
+                                        </div>
+                                    </>
+                                )}
+                            </Form>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">
+                                <Link href={expenseTypesIndex()} className="font-medium text-foreground underline-offset-4 hover:underline">
+                                    Create an expense type
+                                </Link>{' '}
+                                before recording an expense.
+                            </p>
                         )}
-                    </Form>
-                ) : (
-                    <p className="text-sm text-muted-foreground">
-                        <Link href={expenseTypesIndex()} className="font-medium text-foreground underline-offset-4 hover:underline">
-                            Create an expense type
-                        </Link>{' '}
-                        before recording an expense.
-                    </p>
-                )}
+                    </div>
+                </section>
 
-                <div className="flex flex-col gap-3">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-                        <div className="grid min-w-0 flex-1 gap-2 sm:max-w-sm">
-                            <Label htmlFor="expense-search">Concepto</Label>
-                            <Input id="expense-search" value={conceptDraft} onChange={(event) => setConceptDraft(event.target.value)} placeholder="Search concepto" data-test="expense-search" />
+                <section className="rounded-xl border border-border bg-card" aria-labelledby="expense-list-heading">
+                    <div className="flex flex-col gap-3 border-b border-border px-4 py-3">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <h3 id="expense-list-heading" className="text-sm font-semibold">
+                                {year} expenses <span className="font-normal text-muted-foreground">· {pagination.total} shown</span>
+                            </h3>
+                            <div className="relative w-full sm:w-80">
+                                <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input id="expense-search" value={conceptDraft} onChange={(event) => setConceptDraft(event.target.value)} placeholder="Search concepto" aria-label="Search concepto" className="px-9" data-test="expense-search" />
+                                {conceptDraft !== '' && (
+                                    <button type="button" onClick={() => setConceptDraft('')} className="absolute top-1/2 right-2 flex size-6 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground" aria-label="Clear search">
+                                        <X className="size-4" />
+                                    </button>
+                                )}
+                            </div>
                         </div>
-                        <div className="grid w-full gap-2 sm:w-28">
-                            <Label htmlFor="expense-per-page">Rows</Label>
+                        <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Months">
+                            <span className="mr-1 text-xs text-muted-foreground">Months</span>
+                            <MonthChip active={filters.months.length === 0} onClick={() => visit({ months: [] })}>
+                                All
+                            </MonthChip>
+                            {months.map((option) => (
+                                <MonthChip key={option.value} active={filters.months.includes(option.value)} onClick={() => visit({ months: filters.months.includes(option.value) ? filters.months.filter((month) => month !== option.value) : [...filters.months, option.value].sort((left, right) => left - right) })}>
+                                    {option.short}
+                                </MonthChip>
+                            ))}
+                            {hasFilters && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setConceptDraft('');
+                                        visit({ concept: '', months: [] });
+                                    }}
+                                    className="ml-auto text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                                    data-test="clear-expense-filters"
+                                >
+                                    Clear filters
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                        <table className="w-full table-fixed text-sm [&_td]:break-words [&_th]:break-words">
+                            <caption className="sr-only">Your expenses</caption>
+                            <colgroup>
+                                <col className="w-[12%]" />
+                                <col className="w-[7%]" />
+                                <col className="w-[24%]" />
+                                <col className="w-[12%]" />
+                                <col className="w-[17%]" />
+                                <col className="w-[8%]" />
+                                <col className="w-[8%]" />
+                                <col className="w-[12%]" />
+                            </colgroup>
+                            <thead className="border-b border-border bg-muted/40 text-left">
+                                <tr>
+                                    <th className="px-4 py-2 font-medium">Mes</th>
+                                    <th className="px-2 py-2 font-medium">Tipo</th>
+                                    <th className="px-4 py-2 font-medium">Concepto</th>
+                                    <th className="px-4 py-2 font-medium">Categoría</th>
+                                    <th className="px-4 py-2 font-medium">Subcategoría</th>
+                                    <th className="px-4 py-2 text-right font-medium">Soles</th>
+                                    <th className="px-4 py-2 text-right font-medium">Dólares</th>
+                                    <th className="px-4 py-2 text-right font-medium">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {expenses.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={8} className="px-4 py-6 text-muted-foreground">
+                                            {hasFilters ? 'No expenses match these filters.' : 'You have not recorded any expenses for this year.'}
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    expenses.map((expense) => {
+                                        const editing = editingId === expense.id;
+                                        const filingCategory = categories.find((category) => String(category.id) === filing.data.category_id) ?? null;
+
+                                        return (
+                                            <tr key={expense.id} className="border-b border-border last:border-b-0">
+                                                <td className="px-4 py-2">
+                                                    {editing ? (
+                                                        <RowSelect
+                                                            id={`expense-${expense.id}-month`}
+                                                            value={filing.data.month}
+                                                            onValueChange={(value) => filing.setData('month', value)}
+                                                            options={months.map((option) => ({
+                                                                value: String(option.value),
+                                                                label: option.label,
+                                                            }))}
+                                                            error={filing.errors.month}
+                                                            className="w-full min-w-0"
+                                                        />
+                                                    ) : (
+                                                        expense.month
+                                                    )}
+                                                </td>
+                                                <td className="px-2 py-2 font-medium">
+                                                    {editing ? (
+                                                        <RowSelect
+                                                            id={`expense-${expense.id}-type`}
+                                                            value={filing.data.expense_type_id}
+                                                            onValueChange={(value) => filing.setData('expense_type_id', value)}
+                                                            options={expenseTypes.map((expenseType) => ({
+                                                                value: String(expenseType.id),
+                                                                label: expenseType.acronym,
+                                                            }))}
+                                                            error={filing.errors.expense_type_id}
+                                                            className="w-full min-w-0"
+                                                        />
+                                                    ) : (
+                                                        expense.type
+                                                    )}
+                                                </td>
+                                                <td className="px-4 py-2">
+                                                    {editing ? (
+                                                        <div className="grid w-full min-w-0 gap-1 overflow-hidden">
+                                                            <Input id={`expense-${expense.id}-concept`} value={filing.data.concept} maxLength={255} onChange={(event) => filing.setData('concept', event.target.value)} className="h-8" />
+                                                            <InputError message={filing.errors.concept} />
+                                                        </div>
+                                                    ) : (
+                                                        expense.concept
+                                                    )}
+                                                </td>
+                                                <td className="px-4 py-2">
+                                                    {editing ? (
+                                                        <RowSelect
+                                                            id={`expense-${expense.id}-category`}
+                                                            value={filing.data.category_id}
+                                                            onValueChange={changeFilingCategory}
+                                                            options={categories.map((category) => ({
+                                                                value: String(category.id),
+                                                                label: category.name,
+                                                            }))}
+                                                            emptyLabel="Optional"
+                                                            error={filing.errors.category_id}
+                                                        />
+                                                    ) : (
+                                                        <CategoryPill label={expense.category} color={expense.categoryColor} />
+                                                    )}
+                                                </td>
+                                                <td className="px-4 py-2">
+                                                    {editing ? (
+                                                        <RowSelect
+                                                            id={`expense-${expense.id}-subcategory`}
+                                                            value={filing.data.subcategory_id}
+                                                            onValueChange={(value) => filing.setData('subcategory_id', value)}
+                                                            options={(filingCategory?.subcategories ?? []).map((subcategory) => ({
+                                                                value: String(subcategory.id),
+                                                                label: subcategory.name,
+                                                            }))}
+                                                            emptyLabel="Optional"
+                                                            disabled={filing.data.category_id === ''}
+                                                            error={filing.errors.subcategory_id}
+                                                        />
+                                                    ) : expense.subcategory === null || expense.subcategory === '' ? (
+                                                        <span className="font-medium text-white">-</span>
+                                                    ) : (
+                                                        <span className="break-words">{expense.subcategory}</span>
+                                                    )}
+                                                </td>
+                                                <td className="px-4 py-2 text-right tabular-nums">
+                                                    {editing ? (
+                                                        <AmountEditor
+                                                            id={`expense-${expense.id}-soles`}
+                                                            amount={filing.data.currency === 'pen' ? filing.data.amount : ''}
+                                                            error={filing.data.currency === 'pen' ? filing.errors.amount : undefined}
+                                                            onAmount={(amount) =>
+                                                                filing.setData((current) => ({
+                                                                    ...current,
+                                                                    currency: 'pen',
+                                                                    amount,
+                                                                }))
+                                                            }
+                                                        />
+                                                    ) : (
+                                                        <AmountPill amount={expense.soles} />
+                                                    )}
+                                                </td>
+                                                <td className="px-4 py-2 text-right tabular-nums">
+                                                    {editing ? (
+                                                        <AmountEditor
+                                                            id={`expense-${expense.id}-dollars`}
+                                                            amount={filing.data.currency === 'usd' ? filing.data.amount : ''}
+                                                            error={filing.data.currency === 'usd' ? filing.errors.amount : undefined}
+                                                            onAmount={(amount) =>
+                                                                filing.setData((current) => ({
+                                                                    ...current,
+                                                                    currency: 'usd',
+                                                                    amount,
+                                                                }))
+                                                            }
+                                                        />
+                                                    ) : (
+                                                        <AmountPill amount={expense.dollars} />
+                                                    )}
+                                                </td>
+                                                <td className="px-3 py-2 text-right whitespace-nowrap">
+                                                    {editing ? (
+                                                        <div className="flex justify-end gap-2">
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                size="icon"
+                                                                className="shrink-0 border-transparent bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-600/30"
+                                                                disabled={filing.processing}
+                                                                onClick={() => saveFiling(expense.id)}
+                                                                data-test={`save-expense-${expense.id}`}
+                                                            >
+                                                                <Check />
+                                                                <span className="sr-only">Save</span>
+                                                            </Button>
+                                                            <Button type="button" variant="destructive" size="icon" className="shrink-0" onClick={cancelFiling} data-test={`cancel-expense-${expense.id}`}>
+                                                                <X />
+                                                                <span className="sr-only">Cancel</span>
+                                                            </Button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex justify-end gap-2">
+                                                            <Button type="button" variant="outline" size="icon" className="shrink-0 border-transparent bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-600/30" onClick={() => openRowEditor(expense)} data-test={`edit-expense-${expense.id}`}>
+                                                                <Pencil />
+                                                                <span className="sr-only">Edit</span>
+                                                            </Button>
+                                                            <Dialog>
+                                                                <DialogTrigger asChild>
+                                                                    <Button type="button" variant="destructive" size="icon" className="shrink-0" data-test={`delete-expense-${expense.id}`}>
+                                                                        <Trash2 />
+                                                                        <span className="sr-only">Delete</span>
+                                                                    </Button>
+                                                                </DialogTrigger>
+                                                                <DialogContent>
+                                                                    <DialogTitle>Delete {expense.concept}?</DialogTitle>
+                                                                    <DialogDescription>This removes the expense. You cannot undo this.</DialogDescription>
+                                                                    <Form {...ExpenseController.destroy.form(expense.id)} disableWhileProcessing>
+                                                                        {({ processing }) => (
+                                                                            <DialogFooter className="gap-2">
+                                                                                <DialogClose asChild>
+                                                                                    <Button type="button" variant="secondary">
+                                                                                        Cancel
+                                                                                    </Button>
+                                                                                </DialogClose>
+                                                                                <Button type="submit" variant="destructive" disabled={processing} data-test={`confirm-delete-expense-${expense.id}`}>
+                                                                                    Delete expense
+                                                                                </Button>
+                                                                            </DialogFooter>
+                                                                        )}
+                                                                    </Form>
+                                                                </DialogContent>
+                                                            </Dialog>
+                                                        </div>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3 text-sm">
+                        <p className="text-muted-foreground">{pagination.total === 0 ? '0 expenses' : `${pagination.from}–${pagination.to} of ${pagination.total}`}</p>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Label htmlFor="expense-per-page" className="font-normal text-muted-foreground">
+                                Rows per page
+                            </Label>
                             <Select value={String(filters.perPage)} onValueChange={(value) => visit({ per_page: Number(value) })}>
-                                <SelectTrigger id="expense-per-page" className="w-full" data-test="expense-per-page">
+                                <SelectTrigger id="expense-per-page" size="sm" className="w-20" data-test="expense-per-page">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -448,251 +726,33 @@ export default function ExpensesIndex({ year, years, expenses, filters, paginati
                                     ))}
                                 </SelectContent>
                             </Select>
+                            <Button type="button" size="sm" variant="outline" disabled={pagination.currentPage <= 1} onClick={() => visit({ page: pagination.currentPage - 1 })}>
+                                Previous
+                            </Button>
+                            <Button type="button" size="sm" variant="outline" disabled={pagination.currentPage >= pagination.lastPage} onClick={() => visit({ page: pagination.currentPage + 1 })}>
+                                Next
+                            </Button>
                         </div>
                     </div>
-                    <div className="flex flex-wrap gap-2" role="group" aria-label="Months">
-                        <Button type="button" size="sm" variant={filters.months.length === 0 ? 'default' : 'outline'} aria-pressed={filters.months.length === 0} onClick={() => visit({ months: [] })}>
-                            All
-                        </Button>
-                        {months.map((option) => (
-                            <Button key={option.value} type="button" size="sm" variant={filters.months.includes(option.value) ? 'default' : 'outline'} aria-pressed={filters.months.includes(option.value)} onClick={() => visit({ months: filters.months.includes(option.value) ? filters.months.filter((month) => month !== option.value) : [...filters.months, option.value].sort((left, right) => left - right) })}>
-                                {option.short}
-                            </Button>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="overflow-x-auto rounded-xl border border-border bg-card">
-                    <table className="w-full table-fixed text-sm [&_td]:break-words [&_th]:break-words">
-                        <caption className="sr-only">Your expenses</caption>
-                        <colgroup>
-                            <col className="w-[12%]" />
-                            <col className="w-[7%]" />
-                            <col className="w-[24%]" />
-                            <col className="w-[12%]" />
-                            <col className="w-[17%]" />
-                            <col className="w-[8%]" />
-                            <col className="w-[8%]" />
-                            <col className="w-[12%]" />
-                        </colgroup>
-                        <thead className="border-b border-border bg-muted/40 text-left">
-                            <tr>
-                                <th className="px-4 py-2 font-medium">Mes</th>
-                                <th className="px-2 py-2 font-medium">Tipo</th>
-                                <th className="px-4 py-2 font-medium">Concepto</th>
-                                <th className="px-4 py-2 font-medium">Categoría</th>
-                                <th className="px-4 py-2 font-medium">Subcategoría</th>
-                                <th className="px-4 py-2 text-right font-medium">Soles</th>
-                                <th className="px-4 py-2 text-right font-medium">Dólares</th>
-                                <th className="px-4 py-2 text-right font-medium">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {expenses.length === 0 ? (
-                                <tr>
-                                    <td colSpan={8} className="px-4 py-6 text-muted-foreground">
-                                        {filters.concept !== '' || filters.months.length > 0 ? 'No expenses match these filters.' : 'You have not recorded any expenses for this year.'}
-                                    </td>
-                                </tr>
-                            ) : (
-                                expenses.map((expense) => {
-                                    const editing = editingId === expense.id;
-                                    const filingCategory = categories.find((category) => String(category.id) === filing.data.category_id) ?? null;
-
-                                    return (
-                                        <tr key={expense.id} className="border-b border-border last:border-b-0">
-                                            <td className="px-4 py-2">
-                                                {editing ? (
-                                                    <RowSelect
-                                                        id={`expense-${expense.id}-month`}
-                                                        value={filing.data.month}
-                                                        onValueChange={(value) => filing.setData('month', value)}
-                                                        options={months.map((option) => ({
-                                                            value: String(option.value),
-                                                            label: option.label,
-                                                        }))}
-                                                        error={filing.errors.month}
-                                                        className="w-full min-w-0"
-                                                    />
-                                                ) : (
-                                                    expense.month
-                                                )}
-                                            </td>
-                                            <td className="px-2 py-2 font-medium">
-                                                {editing ? (
-                                                    <RowSelect
-                                                        id={`expense-${expense.id}-type`}
-                                                        value={filing.data.expense_type_id}
-                                                        onValueChange={(value) => filing.setData('expense_type_id', value)}
-                                                        options={expenseTypes.map((expenseType) => ({
-                                                            value: String(expenseType.id),
-                                                            label: expenseType.acronym,
-                                                        }))}
-                                                        error={filing.errors.expense_type_id}
-                                                        className="w-full min-w-0"
-                                                    />
-                                                ) : (
-                                                    expense.type
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-2">
-                                                {editing ? (
-                                                    <div className="grid w-full min-w-0 gap-1 overflow-hidden">
-                                                        <Input id={`expense-${expense.id}-concept`} value={filing.data.concept} maxLength={255} onChange={(event) => filing.setData('concept', event.target.value)} className="h-8" />
-                                                        <InputError message={filing.errors.concept} />
-                                                    </div>
-                                                ) : (
-                                                    expense.concept
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-2">
-                                                {editing ? (
-                                                    <RowSelect
-                                                        id={`expense-${expense.id}-category`}
-                                                        value={filing.data.category_id}
-                                                        onValueChange={changeFilingCategory}
-                                                        options={categories.map((category) => ({
-                                                            value: String(category.id),
-                                                            label: category.name,
-                                                        }))}
-                                                        emptyLabel="Optional"
-                                                        error={filing.errors.category_id}
-                                                    />
-                                                ) : (
-                                                    <CategoryPill label={expense.category} color={expense.categoryColor} />
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-2">
-                                                {editing ? (
-                                                    <RowSelect
-                                                        id={`expense-${expense.id}-subcategory`}
-                                                        value={filing.data.subcategory_id}
-                                                        onValueChange={(value) => filing.setData('subcategory_id', value)}
-                                                        options={(filingCategory?.subcategories ?? []).map((subcategory) => ({
-                                                            value: String(subcategory.id),
-                                                            label: subcategory.name,
-                                                        }))}
-                                                        emptyLabel="Optional"
-                                                        disabled={filing.data.category_id === ''}
-                                                        error={filing.errors.subcategory_id}
-                                                    />
-                                                ) : expense.subcategory === null || expense.subcategory === '' ? (
-                                                    <span className="font-medium text-white">-</span>
-                                                ) : (
-                                                    <span className="break-words">{expense.subcategory}</span>
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-2 text-right tabular-nums">
-                                                {editing ? (
-                                                    <AmountEditor
-                                                        id={`expense-${expense.id}-soles`}
-                                                        amount={filing.data.currency === 'pen' ? filing.data.amount : ''}
-                                                        error={filing.data.currency === 'pen' ? filing.errors.amount : undefined}
-                                                        onAmount={(amount) =>
-                                                            filing.setData((current) => ({
-                                                                ...current,
-                                                                currency: 'pen',
-                                                                amount,
-                                                            }))
-                                                        }
-                                                    />
-                                                ) : (
-                                                    <AmountPill amount={expense.soles} />
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-2 text-right tabular-nums">
-                                                {editing ? (
-                                                    <AmountEditor
-                                                        id={`expense-${expense.id}-dollars`}
-                                                        amount={filing.data.currency === 'usd' ? filing.data.amount : ''}
-                                                        error={filing.data.currency === 'usd' ? filing.errors.amount : undefined}
-                                                        onAmount={(amount) =>
-                                                            filing.setData((current) => ({
-                                                                ...current,
-                                                                currency: 'usd',
-                                                                amount,
-                                                            }))
-                                                        }
-                                                    />
-                                                ) : (
-                                                    <AmountPill amount={expense.dollars} />
-                                                )}
-                                            </td>
-                                            <td className="px-3 py-2 text-right whitespace-nowrap">
-                                                {editing ? (
-                                                    <div className="flex justify-end gap-2">
-                                                        <Button
-                                                            type="button"
-                                                            variant="outline"
-                                                            size="icon"
-                                                            className="shrink-0 border-transparent bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-600/30"
-                                                            disabled={filing.processing}
-                                                            onClick={() => saveFiling(expense.id)}
-                                                            data-test={`save-expense-${expense.id}`}
-                                                        >
-                                                            <Check />
-                                                            <span className="sr-only">Save</span>
-                                                        </Button>
-                                                        <Button type="button" variant="destructive" size="icon" className="shrink-0" onClick={cancelFiling} data-test={`cancel-expense-${expense.id}`}>
-                                                            <X />
-                                                            <span className="sr-only">Cancel</span>
-                                                        </Button>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex justify-end gap-2">
-                                                        <Button type="button" variant="outline" size="icon" className="shrink-0 border-transparent bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-600/30" onClick={() => openRowEditor(expense)} data-test={`edit-expense-${expense.id}`}>
-                                                            <Pencil />
-                                                            <span className="sr-only">Edit</span>
-                                                        </Button>
-                                                        <Dialog>
-                                                            <DialogTrigger asChild>
-                                                                <Button type="button" variant="destructive" size="icon" className="shrink-0" data-test={`delete-expense-${expense.id}`}>
-                                                                    <Trash2 />
-                                                                    <span className="sr-only">Delete</span>
-                                                                </Button>
-                                                            </DialogTrigger>
-                                                            <DialogContent>
-                                                                <DialogTitle>Delete {expense.concept}?</DialogTitle>
-                                                                <DialogDescription>This removes the expense. You cannot undo this.</DialogDescription>
-                                                                <Form {...ExpenseController.destroy.form(expense.id)} disableWhileProcessing>
-                                                                    {({ processing }) => (
-                                                                        <DialogFooter className="gap-2">
-                                                                            <DialogClose asChild>
-                                                                                <Button type="button" variant="secondary">
-                                                                                    Cancel
-                                                                                </Button>
-                                                                            </DialogClose>
-                                                                            <Button type="submit" variant="destructive" disabled={processing} data-test={`confirm-delete-expense-${expense.id}`}>
-                                                                                Delete expense
-                                                                            </Button>
-                                                                        </DialogFooter>
-                                                                    )}
-                                                                </Form>
-                                                            </DialogContent>
-                                                        </Dialog>
-                                                    </div>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    );
-                                })
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-                <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-                    <p className="text-muted-foreground">{pagination.total === 0 ? '0 expenses' : `${pagination.from}–${pagination.to} of ${pagination.total}`}</p>
-                    <div className="flex gap-2">
-                        <Button type="button" size="sm" variant="outline" disabled={pagination.currentPage <= 1} onClick={() => visit({ page: pagination.currentPage - 1 })}>
-                            Previous
-                        </Button>
-                        <Button type="button" size="sm" variant="outline" disabled={pagination.currentPage >= pagination.lastPage} onClick={() => visit({ page: pagination.currentPage + 1 })}>
-                            Next
-                        </Button>
-                    </div>
-                </div>
+                </section>
             </div>
         </>
+    );
+}
+
+function MonthChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
+    return (
+        <button
+            type="button"
+            aria-pressed={active}
+            onClick={onClick}
+            className={cn(
+                'rounded-full border px-2.5 py-1 text-xs transition-colors focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none',
+                active ? 'border-primary bg-primary font-medium text-primary-foreground' : 'border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+            )}
+        >
+            {children}
+        </button>
     );
 }
 
