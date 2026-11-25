@@ -13,6 +13,15 @@ Route::inertia('/', 'welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('dashboard/{year}/{month}/{currency}', [DashboardController::class, 'show'])
+        ->name('dashboard.show')
+        ->whereNumber(['year', 'month'])
+        ->where('currency', 'pen|usd');
+    Route::get('dashboard/{year}/{month}/{currency}/{group}/{category}', [DashboardController::class, 'subcategories'])
+        ->name('dashboard.subcategories')
+        ->whereNumber(['year', 'month', 'category'])
+        ->where('currency', 'pen|usd')
+        ->where('group', 'fixed|variable');
 
     Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('expense-types', ExpenseTypeController::class)->only(['index', 'store']);

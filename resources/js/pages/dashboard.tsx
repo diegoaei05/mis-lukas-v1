@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Tooltip } from 'chart.js';
 import { useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
+import { show } from '@/actions/App/Http/Controllers/DashboardController';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAppearance } from '@/hooks/use-appearance';
@@ -73,6 +74,22 @@ function StackedCurrencyChart({ title, year, currency, fixedMonths, variableMont
                                 },
                             },
                         },
+                        onClick: (_event, elements) => {
+                            const month = fixedMonths[elements[0]?.index ?? -1]?.month;
+
+                            if (month === undefined) {
+                                return;
+                            }
+
+                            router.get(show.url({ year, month, currency: currency === 'soles' ? 'pen' : 'usd' }));
+                        },
+                        onHover: (event, elements) => {
+                            const target = event.native?.target;
+
+                            if (target instanceof HTMLElement) {
+                                target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                            }
+                        },
                         scales: {
                             x: {
                                 stacked: true,
@@ -122,7 +139,7 @@ export default function Dashboard({ year, fixedMonths, variableMonths }: { year:
             <div className="flex h-full flex-1 flex-col gap-6 p-4">
                 <div className="flex flex-col gap-0.5">
                     <h2 className="text-xl font-semibold tracking-tight">Dashboard</h2>
-                    <p className="text-sm text-muted-foreground">Each month is one bar. Fixed bills sit on the bottom and variable expenses sit on top.</p>
+                    <p className="text-sm text-muted-foreground">Each month is one bar. Fixed bills sit on the bottom and variable expenses sit on top. Click a month to see its categories.</p>
                 </div>
 
                 <div className="grid max-w-xs gap-2">
