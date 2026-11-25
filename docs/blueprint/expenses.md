@@ -34,8 +34,8 @@ POST /expenses
     category and subcategory may both be omitted
     a category may be saved with no subcategory
     a subcategory requires the category it belongs to
-    the expense type must belong to this user, or the response is 404
-    a submitted category or subcategory must belong to this user, or the response is 404
+    the expense type must belong to this user, or the signed-in user is sent to the dashboard
+    a submitted category or subcategory must belong to this user, or the signed-in user is sent to the dashboard
     the subcategory must belong to the selected category
     INSERT INTO expenses
 ```
@@ -45,13 +45,13 @@ The form posts through Wayfinder and uses the `createExpense` error bag. A succe
 ```text
 PUT /expenses/{expense}
   UpdateExpenseRequest
-    the expense must belong to this user, or the response is 404
+    the expense must belong to this user, or the signed-in user is sent to the dashboard
     month, year, concept, currency, and amount follow the same rules as a new expense
-    the expense type must belong to this user, or the response is 404
+    the expense type must belong to this user, or the signed-in user is sent to the dashboard
     category and subcategory may both be cleared
     a category may be saved with no subcategory
     a subcategory requires the category it belongs to
-    a submitted category or subcategory must belong to this user, or the response is 404
+    a submitted category or subcategory must belong to this user, or the signed-in user is sent to the dashboard
     UPDATE expenses
 ```
 
@@ -59,7 +59,7 @@ The row posts through Wayfinder and uses the `updateExpense-{id}` error bag. A s
 
 ```text
 DELETE /expenses/{expense}
-  the expense must belong to this user, or the response is 404
+  the expense must belong to this user, or the signed-in user is sent to the dashboard
   DELETE FROM expenses
 ```
 

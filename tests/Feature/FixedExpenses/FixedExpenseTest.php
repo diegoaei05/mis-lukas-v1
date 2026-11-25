@@ -251,19 +251,19 @@ test('a subcategory from another category is rejected', function () {
     expect($user->fixedExpenses()->count())->toBe(0);
 });
 
-test('another user\'s expense type is a 404', function () {
+test('another user\'s expense type sends the user to the dashboard', function () {
     ['user' => $user, 'category' => $category, 'subcategory' => $subcategory] = fixedBillContext();
     $someoneElse = User::factory()->create();
     $hiddenType = ExpenseType::factory()->for($someoneElse)->create();
 
     $this->actingAs($user)
         ->post(route('fixed-expenses.store'), fixedBillPayload($category, $subcategory, $hiddenType))
-        ->assertNotFound();
+        ->assertRedirect(route('dashboard'));
 
     expect(FixedExpense::query()->count())->toBe(0);
 });
 
-test('another user\'s subcategory is a 404', function () {
+test('another user\'s subcategory sends the user to the dashboard', function () {
     ['user' => $user, 'category' => $category, 'expenseType' => $expenseType] = fixedBillContext();
     $someoneElse = User::factory()->create();
     $hiddenCategory = Category::factory()->for($someoneElse)->create();
@@ -271,7 +271,7 @@ test('another user\'s subcategory is a 404', function () {
 
     $this->actingAs($user)
         ->post(route('fixed-expenses.store'), fixedBillPayload($category, $hiddenSubcategory, $expenseType))
-        ->assertNotFound();
+        ->assertRedirect(route('dashboard'));
 
     expect(FixedExpense::query()->count())->toBe(0);
 });
@@ -294,7 +294,7 @@ test('the owner can pay their bill and another user cannot', function () {
             'year' => 2026,
             'amount' => '45.00',
         ])
-        ->assertNotFound();
+        ->assertRedirect(route('dashboard'));
 
     expect(FixedExpensePayment::query()->count())->toBe(0);
 });
@@ -462,7 +462,7 @@ test('another user cannot delete a fixed expense', function () {
 
     $this->actingAs($someoneElse)
         ->delete(route('fixed-expenses.destroy', $bill))
-        ->assertNotFound();
+        ->assertRedirect(route('dashboard'));
 
     expect(Gate::forUser($user)->inspect('delete', $bill)->allowed())->toBeTrue()
         ->and(Gate::forUser($someoneElse)->inspect('delete', $bill)->denied())->toBeTrue()
@@ -489,7 +489,7 @@ test('another user cannot edit a fixed expense', function () {
             'currency' => 'pen',
             'amount' => '10.00',
         ])
-        ->assertNotFound();
+        ->assertRedirect(route('dashboard'));
 
     expect($bill->fresh()->name)->toBe('Netflix')
         ->and($bill->fresh()->amount)->toBe('45.00');

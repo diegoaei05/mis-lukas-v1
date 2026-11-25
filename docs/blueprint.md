@@ -38,6 +38,8 @@ Two kinds of request:
 
 Writes follow a second path. The React `<Form>` posts to a route. The controller validates and saves. Success redirects to another Inertia page. Failure redirects back, and Inertia puts the validator messages on `errors` for that form.
 
+A signed-in user who opens a missing page, or a record that is not theirs, is sent to the dashboard. A guest who opens a missing public page still sees a 404. A guest who opens a private page is sent to login.
+
 `auth.user` is the Eloquent user for the current session. `password`, `remember_token`, `two_factor_secret`, and `two_factor_recovery_codes` are hidden, so they are not in the props sent to the browser.
 
 ## What a new module copies
@@ -56,7 +58,7 @@ Registration is the exception that uses Fortify’s controller. Application scre
 
 | Module                                        | Summary                                                                                                                      |
 | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| [Dashboard](blueprint/dashboard.md)           | A signed-in user sees each month as a stacked bar, a clicked month as two category rings, and a clicked category as its subcategories. |
+| [Dashboard](blueprint/dashboard.md)           | A signed-in user sees each month as a stacked bar, a clicked month as Soles and Dólares category rings, and a clicked category as its subcategories. |
 | [Accounts](blueprint/accounts.md)             | A visitor registers, and a row is written to `users`.                                                                        |
 | [Categories](blueprint/categories.md)         | A signed-in user picks a category, then adds or deletes its subcategories.                                                   |
 | [Expense Types](blueprint/expense-types.md)   | A signed-in user creates an acronym and a description for each Tipo.                                                         |

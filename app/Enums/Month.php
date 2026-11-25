@@ -16,4 +16,39 @@ enum Month: int
     case Octubre = 10;
     case Noviembre = 11;
     case Diciembre = 12;
+
+    /**
+     * The month as it appears in a dashboard address, such as jan.
+     */
+    public function slug(): string
+    {
+        return match ($this) {
+            self::Enero => 'jan',
+            self::Febrero => 'feb',
+            self::Marzo => 'mar',
+            self::Abril => 'apr',
+            self::Mayo => 'may',
+            self::Junio => 'jun',
+            self::Julio => 'jul',
+            self::Agosto => 'aug',
+            self::Septiembre => 'sep',
+            self::Octubre => 'oct',
+            self::Noviembre => 'nov',
+            self::Diciembre => 'dec',
+        };
+    }
+
+    /**
+     * Find a month from its dashboard address.
+     */
+    public static function fromSlug(string $slug): ?self
+    {
+        foreach (self::cases() as $month) {
+            if ($month->slug() === $slug) {
+                return $month;
+            }
+        }
+
+        return null;
+    }
 }

@@ -142,32 +142,32 @@ test('the dashboard totals fixed bills for every month and uses a paid amount', 
 });
 
 test('guests are redirected from a month page', function () {
-    $this->get(route('dashboard.show', ['year' => 2026, 'month' => 1, 'currency' => 'pen']))
+    $this->get(route('dashboard.show', ['year' => 2026, 'month' => 'jan']))
         ->assertRedirect(route('login'));
 });
 
-test('an unknown month is a 404', function () {
+test('an unknown month sends the user to the dashboard', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->get(route('dashboard.show', ['year' => 2026, 'month' => 13, 'currency' => 'pen']))
-        ->assertNotFound();
+        ->get(route('dashboard.show', ['year' => 2026, 'month' => 'xyz']))
+        ->assertRedirect(route('dashboard'));
 });
 
-test('an unknown currency is a 404', function () {
+test('a numbered month address sends the user to the dashboard', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->get('/dashboard/2026/1/eur')
-        ->assertNotFound();
+        ->get('/dashboard/2026/1/pen')
+        ->assertRedirect(route('dashboard'));
 });
 
-test('a year outside the allowed range is a 404 on a month page', function () {
+test('a year outside the allowed range on a month page sends the user to the dashboard', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->get(route('dashboard.show', ['year' => 1999, 'month' => 1, 'currency' => 'pen']))
-        ->assertNotFound();
+        ->get(route('dashboard.show', ['year' => 1999, 'month' => 'jan']))
+        ->assertRedirect(route('dashboard'));
 });
 
 test('a month page groups fixed bills by category and uses a paid amount', function () {
@@ -213,25 +213,29 @@ test('a month page groups fixed bills by category and uses a paid amount', funct
     ]);
 
     $this->actingAs($user)
-        ->get(route('dashboard.show', ['year' => 2026, 'month' => 2, 'currency' => 'pen']))
+        ->get(route('dashboard.show', ['year' => 2026, 'month' => 'feb']))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('dashboard/month')
             ->where('monthLabel', 'Febrero')
-            ->where('currencyLabel', 'Soles')
-            ->has('fixed', 1)
-            ->where('fixed.0.id', $vivienda->id)
-            ->where('fixed.0.category', 'Vivienda')
-            ->where('fixed.0.color', 'blue')
-            ->where('fixed.0.amount', '1800.00')
-            ->has('variable', 0),
+            ->has('soles.fixed', 1)
+            ->where('soles.fixed.0.id', $vivienda->id)
+            ->where('soles.fixed.0.category', 'Vivienda')
+            ->where('soles.fixed.0.color', 'blue')
+            ->where('soles.fixed.0.amount', '1800.00')
+            ->has('soles.variable', 0)
+            ->has('dollars.fixed', 1)
+            ->where('dollars.fixed.0.category', 'Otros')
+            ->where('dollars.fixed.0.color', 'purple')
+            ->where('dollars.fixed.0.amount', '20.00')
+            ->has('dollars.variable', 0),
         );
 
     $this->actingAs($user)
-        ->get(route('dashboard.show', ['year' => 2026, 'month' => 1, 'currency' => 'pen']))
+        ->get(route('dashboard.show', ['year' => 2026, 'month' => 'jan']))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->where('fixed.0.amount', '1700.00'),
+            ->where('soles.fixed.0.amount', '1700.00'),
         );
 });
 
@@ -289,19 +293,23 @@ test('a month page groups variable expenses by category', function () {
     ]);
 
     $this->actingAs($user)
-        ->get(route('dashboard.show', ['year' => 2026, 'month' => 1, 'currency' => 'pen']))
+        ->get(route('dashboard.show', ['year' => 2026, 'month' => 'jan']))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->has('fixed', 0)
-            ->has('variable', 2)
-            ->where('variable.0.id', $comida->id)
-            ->where('variable.0.category', 'Comida')
-            ->where('variable.0.color', 'green')
-            ->where('variable.0.amount', '15.50')
-            ->where('variable.1.id', null)
-            ->where('variable.1.category', null)
-            ->where('variable.1.color', null)
-            ->where('variable.1.amount', '3.00'),
+            ->has('soles.fixed', 0)
+            ->has('soles.variable', 2)
+            ->where('soles.variable.0.id', $comida->id)
+            ->where('soles.variable.0.category', 'Comida')
+            ->where('soles.variable.0.color', 'green')
+            ->where('soles.variable.0.amount', '15.50')
+            ->where('soles.variable.1.id', null)
+            ->where('soles.variable.1.category', null)
+            ->where('soles.variable.1.color', null)
+            ->where('soles.variable.1.amount', '3.00')
+            ->has('dollars.fixed', 0)
+            ->has('dollars.variable', 1)
+            ->where('dollars.variable.0.category', 'Comida')
+            ->where('dollars.variable.0.amount', '8.00'),
         );
 });
 
@@ -310,9 +318,7 @@ test('guests are redirected from a subcategory page', function () {
 
     $this->get(route('dashboard.subcategories', [
         'year' => 2026,
-        'month' => 1,
-        'currency' => 'pen',
-        'group' => 'variable',
+        'month' => 'jan',
         'category' => $category,
     ]))->assertRedirect(route('login'));
 });
@@ -325,21 +331,19 @@ test('another user cannot open a category ring', function () {
     $this->actingAs($visitor)
         ->get(route('dashboard.subcategories', [
             'year' => 2026,
-            'month' => 1,
-            'currency' => 'pen',
-            'group' => 'fixed',
+            'month' => 'jan',
             'category' => $category,
         ]))
-        ->assertNotFound();
+        ->assertRedirect(route('dashboard'));
 });
 
-test('an unknown group is a 404', function () {
+test('a group in the category address sends the user to the dashboard', function () {
     $user = User::factory()->create();
     $category = Category::factory()->for($user)->create();
 
     $this->actingAs($user)
-        ->get("/dashboard/2026/1/pen/other/{$category->id}")
-        ->assertNotFound();
+        ->get("/dashboard/2026/jan/fixed/{$category->id}")
+        ->assertRedirect(route('dashboard'));
 });
 
 test('a category ring groups fixed bills by subcategory and uses a paid amount', function () {
@@ -372,21 +376,21 @@ test('a category ring groups fixed bills by subcategory and uses a paid amount',
     $this->actingAs($user)
         ->get(route('dashboard.subcategories', [
             'year' => 2026,
-            'month' => 2,
-            'currency' => 'pen',
-            'group' => 'fixed',
+            'month' => 'feb',
             'category' => $vivienda,
         ]))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('dashboard/subcategories')
             ->where('category', 'Vivienda')
-            ->where('groupLabel', 'Fijos')
-            ->has('slices', 2)
-            ->where('slices.0.category', 'Renta')
-            ->where('slices.0.amount', '1700.00')
-            ->where('slices.1.category', 'Internet')
-            ->where('slices.1.amount', '100.00'),
+            ->has('soles.fixed', 2)
+            ->where('soles.fixed.0.category', 'Renta')
+            ->where('soles.fixed.0.amount', '1700.00')
+            ->where('soles.fixed.1.category', 'Internet')
+            ->where('soles.fixed.1.amount', '100.00')
+            ->has('soles.variable', 0)
+            ->has('dollars.fixed', 0)
+            ->has('dollars.variable', 0),
         );
 });
 
@@ -432,6 +436,12 @@ test('a category ring groups variable expenses by subcategory', function () {
         'amount' => '40.00',
     ]);
     Expense::factory()->for($user)->for($expenseType)->for($restaurants)->create([
+        'month' => 1,
+        'year' => 2026,
+        'currency' => 'usd',
+        'amount' => '8.00',
+    ]);
+    Expense::factory()->for($user)->for($expenseType)->for($restaurants)->create([
         'month' => 2,
         'year' => 2026,
         'currency' => 'pen',
@@ -441,24 +451,26 @@ test('a category ring groups variable expenses by subcategory', function () {
     $this->actingAs($user)
         ->get(route('dashboard.subcategories', [
             'year' => 2026,
-            'month' => 1,
-            'currency' => 'pen',
-            'group' => 'variable',
+            'month' => 'jan',
             'category' => $comida,
         ]))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->where('groupLabel', 'Variables')
             ->where('categoryId', $comida->id)
             ->has('categories', 2)
             ->where('categories.0.name', 'Comida')
             ->where('categories.1.name', 'Otros')
-            ->has('slices', 3)
-            ->where('slices.0.category', 'Restaurantes')
-            ->where('slices.0.amount', '15.50')
-            ->where('slices.1.category', 'Menus')
-            ->where('slices.1.amount', '4.00')
-            ->where('slices.2.category', null)
-            ->where('slices.2.amount', '2.00'),
+            ->has('soles.fixed', 0)
+            ->has('soles.variable', 3)
+            ->where('soles.variable.0.category', 'Restaurantes')
+            ->where('soles.variable.0.amount', '15.50')
+            ->where('soles.variable.1.category', 'Menus')
+            ->where('soles.variable.1.amount', '4.00')
+            ->where('soles.variable.2.category', null)
+            ->where('soles.variable.2.amount', '2.00')
+            ->has('dollars.fixed', 0)
+            ->has('dollars.variable', 1)
+            ->where('dollars.variable.0.category', 'Restaurantes')
+            ->where('dollars.variable.0.amount', '8.00'),
         );
 });

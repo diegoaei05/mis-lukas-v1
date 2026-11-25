@@ -44,44 +44,40 @@ class DashboardController extends Controller
     /**
      * Show one month as two category pies: fixed bills and variable expenses.
      */
-    public function show(Request $request, int $year, int $month, string $currency): Response
+    public function show(Request $request, int $year, string $month): Response
     {
-        [$monthEnum, $currencyEnum] = $this->period($year, $month, $currency);
+        $monthEnum = $this->month($year, $month);
 
         return Inertia::render('dashboard/month', [
             'year' => $year,
-            'month' => $monthEnum->value,
+            'month' => $monthEnum->slug(),
             'monthLabel' => $monthEnum->name,
-            'currency' => $currencyEnum->value,
-            'currencyLabel' => $currencyEnum->label(),
-            'fixed' => $this->fixedCategories($request, $year, $monthEnum, $currencyEnum),
-            'variable' => $this->variableCategories($request, $year, $monthEnum, $currencyEnum),
+            'soles' => [
+                'fixed' => $this->fixedCategories($request, $year, $monthEnum, Currency::Pen),
+                'variable' => $this->variableCategories($request, $year, $monthEnum, Currency::Pen),
+            ],
+            'dollars' => [
+                'fixed' => $this->fixedCategories($request, $year, $monthEnum, Currency::Usd),
+                'variable' => $this->variableCategories($request, $year, $monthEnum, Currency::Usd),
+            ],
         ]);
     }
 
     /**
      * Show one category as a ring of its subcategories.
      */
-    public function subcategories(Request $request, int $year, int $month, string $currency, string $group, Category $category): Response
+    public function subcategories(Request $request, int $year, string $month, Category $category): Response
     {
-        [$monthEnum, $currencyEnum] = $this->period($year, $month, $currency);
+        $monthEnum = $this->month($year, $month);
 
-        if (! in_array($group, ['fixed', 'variable'], true) || $category->user_id !== $request->user()->id) {
+        if ($category->user_id !== $request->user()->id) {
             abort(404);
         }
 
-        $slices = $group === 'fixed'
-            ? $this->fixedSubcategories($request, $year, $monthEnum, $currencyEnum, $category)
-            : $this->variableSubcategories($request, $year, $monthEnum, $currencyEnum, $category);
-
         return Inertia::render('dashboard/subcategories', [
             'year' => $year,
-            'month' => $monthEnum->value,
+            'month' => $monthEnum->slug(),
             'monthLabel' => $monthEnum->name,
-            'currency' => $currencyEnum->value,
-            'currencyLabel' => $currencyEnum->label(),
-            'group' => $group,
-            'groupLabel' => $group === 'fixed' ? 'Fijos' : 'Variables',
             'categoryId' => $category->id,
             'category' => $category->name,
             'categories' => $request->user()
@@ -93,29 +89,33 @@ class DashboardController extends Controller
                     'name' => $item->name,
                 ])
                 ->all(),
-            'slices' => $slices,
+            'soles' => [
+                'fixed' => $this->fixedSubcategories($request, $year, $monthEnum, Currency::Pen, $category),
+                'variable' => $this->variableSubcategories($request, $year, $monthEnum, Currency::Pen, $category),
+            ],
+            'dollars' => [
+                'fixed' => $this->fixedSubcategories($request, $year, $monthEnum, Currency::Usd, $category),
+                'variable' => $this->variableSubcategories($request, $year, $monthEnum, Currency::Usd, $category),
+            ],
         ]);
     }
 
     /**
-     * Keep a requested year, month, and currency, or end the request.
-     *
-     * @return array{0: Month, 1: Currency}
+     * Keep a requested year and month, or end the request.
      */
-    private function period(int $year, int $month, string $currency): array
+    private function month(int $year, string $month): Month
     {
         if ($year < 2000 || $year > 2100) {
             abort(404);
         }
 
-        $monthEnum = Month::tryFrom($month);
-        $currencyEnum = Currency::tryFrom($currency);
+        $monthEnum = Month::fromSlug($month);
 
-        if ($monthEnum === null || $currencyEnum === null) {
+        if ($monthEnum === null) {
             abort(404);
         }
 
-        return [$monthEnum, $currencyEnum];
+        return $monthEnum;
     }
 
     /**

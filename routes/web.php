@@ -7,21 +7,22 @@ use App\Http\Controllers\ExpenseTypeController;
 use App\Http\Controllers\FixedExpenseController;
 use App\Http\Controllers\GeneralReportController;
 use App\Http\Controllers\SubcategoryController;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('dashboard/{year}/{month}/{currency}', [DashboardController::class, 'show'])
+    Route::get('dashboard/{year}/{month}', [DashboardController::class, 'show'])
         ->name('dashboard.show')
-        ->whereNumber(['year', 'month'])
-        ->where('currency', 'pen|usd');
-    Route::get('dashboard/{year}/{month}/{currency}/{group}/{category}', [DashboardController::class, 'subcategories'])
+        ->whereNumber('year')
+        ->where('month', 'jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec');
+    Route::get('dashboard/{year}/{month}/{category}', [DashboardController::class, 'subcategories'])
         ->name('dashboard.subcategories')
-        ->whereNumber(['year', 'month', 'category'])
-        ->where('currency', 'pen|usd')
-        ->where('group', 'fixed|variable');
+        ->whereNumber(['year', 'category'])
+        ->where('month', 'jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec');
 
     Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('expense-types', ExpenseTypeController::class)->only(['index', 'store']);
@@ -45,3 +46,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 require __DIR__.'/settings.php';
+
+Route::fallback(function (Request $request): RedirectResponse {
+    if ($request->user() === null || $request->expectsJson() || $request->is('api/*')) {
+        abort(404);
+    }
+
+    return redirect()->route('dashboard');
+});

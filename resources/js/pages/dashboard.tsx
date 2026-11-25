@@ -81,7 +81,13 @@ function StackedCurrencyChart({ title, year, currency, fixedMonths, variableMont
                                 return;
                             }
 
-                            router.get(show.url({ year, month, currency: currency === 'soles' ? 'pen' : 'usd' }));
+                            const slug = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'][month - 1];
+
+                            if (slug === undefined) {
+                                return;
+                            }
+
+                            router.get(show.url({ year, month: slug }));
                         },
                         onHover: (event, elements) => {
                             const target = event.native?.target;

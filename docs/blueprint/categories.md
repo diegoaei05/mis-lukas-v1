@@ -31,7 +31,7 @@ POST /categories
 
 PUT /categories/{category}
   UpdateCategoryRequest
-    CategoryPolicy: another user's category is a 404
+    CategoryPolicy: another user's category sends the signed-in user to the dashboard
     trim the name
     reject a blank name, a name longer than 255 characters, or a name this user already has on a different category
     require a color from the five pill colors
@@ -39,31 +39,31 @@ PUT /categories/{category}
       UPDATE categories
 
 DELETE /categories/{category}
-  CategoryPolicy: another user's category is a 404
+  CategoryPolicy: another user's category sends the signed-in user to the dashboard
   a category that still has variable expenses or fixed expenses is kept, and the page flashes an error
   DELETE FROM categories
     subcategories of that category are deleted with it
 
 POST /categories/{category}/subcategories
   StoreSubcategoryRequest
-    SubcategoryPolicy: another user's category is a 404
+    SubcategoryPolicy: another user's category sends the signed-in user to the dashboard
     trim the name
     reject a blank name, a name longer than 255 characters, or a name this category already has
     category.subcategories()->create
       INSERT INTO subcategories
 
 PUT /categories/{category}/subcategories/{subcategory}
-  the subcategory must belong to the category in the URL, or the response is 404
+  the subcategory must belong to the category in the URL, or the signed-in user is sent to the dashboard
   UpdateSubcategoryRequest
-    SubcategoryPolicy: another user's subcategory is a 404
+    SubcategoryPolicy: another user's subcategory sends the signed-in user to the dashboard
     trim the name
     reject a blank name, a name longer than 255 characters, or a name this category already has on a different subcategory
     subcategory->update
       UPDATE subcategories
 
 DELETE /categories/{category}/subcategories/{subcategory}
-  the subcategory must belong to the category in the URL, or the response is 404
-  SubcategoryPolicy: another user's subcategory is a 404
+  the subcategory must belong to the category in the URL, or the signed-in user is sent to the dashboard
+  SubcategoryPolicy: another user's subcategory sends the signed-in user to the dashboard
   a subcategory that still has variable expenses or fixed expenses is kept, and the page flashes an error
   DELETE FROM subcategories
 ```

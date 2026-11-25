@@ -6,29 +6,46 @@ import { Button } from '@/components/ui/button';
 import { dashboard } from '@/routes';
 
 const months = [
-    { value: 1, label: 'Ene' },
-    { value: 2, label: 'Feb' },
-    { value: 3, label: 'Mar' },
-    { value: 4, label: 'Abr' },
-    { value: 5, label: 'May' },
-    { value: 6, label: 'Jun' },
-    { value: 7, label: 'Jul' },
-    { value: 8, label: 'Ago' },
-    { value: 9, label: 'Sep' },
-    { value: 10, label: 'Oct' },
-    { value: 11, label: 'Nov' },
-    { value: 12, label: 'Dic' },
+    { value: 'jan', label: 'Ene' },
+    { value: 'feb', label: 'Feb' },
+    { value: 'mar', label: 'Mar' },
+    { value: 'apr', label: 'Abr' },
+    { value: 'may', label: 'May' },
+    { value: 'jun', label: 'Jun' },
+    { value: 'jul', label: 'Jul' },
+    { value: 'aug', label: 'Ago' },
+    { value: 'sep', label: 'Sep' },
+    { value: 'oct', label: 'Oct' },
+    { value: 'nov', label: 'Nov' },
+    { value: 'dec', label: 'Dic' },
 ];
 
-export default function DashboardMonth({ year, month, monthLabel, currency, currencyLabel, fixed, variable }: { year: number; month: number; monthLabel: string; currency: string; currencyLabel: string; fixed: RingSlice[]; variable: RingSlice[] }) {
-    const openCategory = (group: 'fixed' | 'variable') => (slice: RingSlice) => {
+type CurrencyCharts = {
+    fixed: RingSlice[];
+    variable: RingSlice[];
+};
+
+function CurrencyCharts({ label, charts, year, month }: { label: string; charts: CurrencyCharts; year: number; month: string }) {
+    const openCategory = (slice: RingSlice) => {
         if (slice.id === null) {
             return;
         }
 
-        router.get(subcategories.url({ year, month, currency, group, category: slice.id }));
+        router.get(subcategories.url({ year, month, category: slice.id }));
     };
 
+    return (
+        <section className="flex flex-col gap-4">
+            <h3 className="text-lg font-semibold">{label}</h3>
+            <div className="grid gap-6 lg:grid-cols-2">
+                <CategoryRing title="Fijos" slices={charts.fixed} emptyMessage="No Fijos for this month." onSlice={openCategory} />
+                <CategoryRing title="Variables" slices={charts.variable} emptyMessage="No Variables for this month." onSlice={openCategory} />
+            </div>
+        </section>
+    );
+}
+
+export default function DashboardMonth({ year, month, monthLabel, soles, dollars }: { year: number; month: string; monthLabel: string; soles: CurrencyCharts; dollars: CurrencyCharts }) {
     return (
         <>
             <Head title={`${monthLabel} ${year}`} />
@@ -41,7 +58,7 @@ export default function DashboardMonth({ year, month, monthLabel, currency, curr
                 <div className="flex flex-wrap gap-2" role="group" aria-label="Month">
                     {months.map((option) => (
                         <Button key={option.value} variant={option.value === month ? 'default' : 'outline'} size="sm" asChild>
-                            <Link href={show.url({ year, month: option.value, currency })} preserveScroll aria-current={option.value === month ? 'page' : undefined}>
+                            <Link href={show.url({ year, month: option.value })} preserveScroll aria-current={option.value === month ? 'page' : undefined}>
                                 {option.label}
                             </Link>
                         </Button>
@@ -52,13 +69,11 @@ export default function DashboardMonth({ year, month, monthLabel, currency, curr
                     <h2 className="text-xl font-semibold tracking-tight">
                         {monthLabel} {year}
                     </h2>
-                    <p className="text-sm text-muted-foreground">{currencyLabel}. Fixed bills and variable expenses, each split by category. Click a category to see its subcategories.</p>
+                    <p className="text-sm text-muted-foreground">Fixed bills and variable expenses, in Soles and Dólares, each split by category. Click a category to see its subcategories.</p>
                 </div>
 
-                <div className="grid gap-6 lg:grid-cols-2">
-                    <CategoryRing title="Fijos" slices={fixed} emptyMessage="No Fijos for this month." onSlice={openCategory('fixed')} />
-                    <CategoryRing title="Variables" slices={variable} emptyMessage="No Variables for this month." onSlice={openCategory('variable')} />
-                </div>
+                <CurrencyCharts label="Soles" charts={soles} year={year} month={month} />
+                <CurrencyCharts label="Dólares" charts={dollars} year={year} month={month} />
             </div>
         </>
     );

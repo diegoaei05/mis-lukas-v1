@@ -25,31 +25,31 @@ POST /fixed-expenses
     name is required, at most 255 characters, and unique for this user including letter case
     currency is pen or usd
     amount is greater than zero, with at most two decimal places
-    the expense type and the category must belong to this user, or the response is 404
-    the subcategory must belong to this user, or the response is 404
+    the expense type and the category must belong to this user, or the signed-in user is sent to the dashboard
+    the subcategory must belong to this user, or the signed-in user is sent to the dashboard
     the subcategory must belong to the selected category
     INSERT INTO fixed_expenses
 
 PUT /fixed-expenses/{fixedExpense}
   UpdateFixedExpenseRequest
-    the bill must belong to this user, or the response is 404
+    the bill must belong to this user, or the signed-in user is sent to the dashboard
     the same rules as creating a bill
     the current name is allowed, including a change of letter case
     a paid month is left as it is
     UPDATE fixed_expenses
 
 DELETE /fixed-expenses/{fixedExpense}
-  the bill must belong to this user, or the response is 404
+  the bill must belong to this user, or the signed-in user is sent to the dashboard
   DELETE FROM fixed_expenses
   payments for that bill are removed with it
 
 POST /fixed-expenses/{fixedExpense}/payments
-  the bill must belong to this user, or the response is 404
+  the bill must belong to this user, or the signed-in user is sent to the dashboard
   the month must not already be paid
   INSERT INTO fixed_expense_payments
 
 DELETE /fixed-expenses/{fixedExpense}/payments
-  the bill must belong to this user, or the response is 404
+  the bill must belong to this user, or the signed-in user is sent to the dashboard
   DELETE that month's payment
   the bill remains
 ```

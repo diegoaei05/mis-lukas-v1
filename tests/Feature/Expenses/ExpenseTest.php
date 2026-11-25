@@ -434,20 +434,20 @@ test('a subcategory from another category is rejected', function () {
     expect($user->expenses()->count())->toBe(0);
 });
 
-test('another user\'s expense type is a 404', function () {
+test('another user\'s expense type sends the user to the dashboard', function () {
     ['user' => $user, 'category' => $category, 'subcategory' => $subcategory] = expenseOwner();
     $someoneElse = User::factory()->create();
     $hiddenType = ExpenseType::factory()->for($someoneElse)->create(['acronym' => 'EF']);
 
     $this->actingAs($user)
         ->post(route('expenses.store'), expensePayload($category, $subcategory, $hiddenType))
-        ->assertNotFound();
+        ->assertRedirect(route('dashboard'));
 
     expect($user->expenses()->count())->toBe(0)
         ->and(Expense::query()->count())->toBe(0);
 });
 
-test('another user\'s subcategory is a 404', function () {
+test('another user\'s subcategory sends the user to the dashboard', function () {
     ['user' => $user, 'category' => $category, 'expenseType' => $expenseType] = expenseOwner();
     $someoneElse = User::factory()->create();
     $hiddenCategory = Category::factory()->for($someoneElse)->create();
@@ -455,19 +455,19 @@ test('another user\'s subcategory is a 404', function () {
 
     $this->actingAs($user)
         ->post(route('expenses.store'), expensePayload($category, $hiddenSubcategory, $expenseType))
-        ->assertNotFound();
+        ->assertRedirect(route('dashboard'));
 
     expect(Expense::query()->count())->toBe(0);
 });
 
-test('another user\'s category is a 404', function () {
+test('another user\'s category sends the user to the dashboard', function () {
     ['user' => $user, 'subcategory' => $subcategory, 'expenseType' => $expenseType] = expenseOwner();
     $someoneElse = User::factory()->create();
     $hiddenCategory = Category::factory()->for($someoneElse)->create();
 
     $this->actingAs($user)
         ->post(route('expenses.store'), expensePayload($hiddenCategory, $subcategory, $expenseType))
-        ->assertNotFound();
+        ->assertRedirect(route('dashboard'));
 
     expect(Expense::query()->count())->toBe(0);
 });
@@ -673,7 +673,7 @@ test('another user cannot update an expense', function () {
             'category_id' => $category->id,
             'subcategory_id' => $subcategory->id,
         ]))
-        ->assertNotFound();
+        ->assertRedirect(route('dashboard'));
 
     expect($expense->refresh()->subcategory_id)->toBe($subcategory->id)
         ->and(Gate::forUser($user)->inspect('update', $expense)->allowed())->toBeTrue()
@@ -696,7 +696,7 @@ test('another user\'s category cannot be filed onto an expense', function () {
             'category_id' => $hiddenCategory->id,
             'subcategory_id' => '',
         ]))
-        ->assertNotFound();
+        ->assertRedirect(route('dashboard'));
 
     expect($expense->refresh()->category_id)->toBeNull();
 });
@@ -805,7 +805,7 @@ test('another user cannot delete an expense', function () {
 
     $this->actingAs($someoneElse)
         ->delete(route('expenses.destroy', $expense))
-        ->assertNotFound();
+        ->assertRedirect(route('dashboard'));
 
     expect(Expense::query()->whereKey($expense->id)->exists())->toBeTrue()
         ->and(Gate::forUser($someoneElse)->inspect('delete', $expense)->denied())->toBeTrue();

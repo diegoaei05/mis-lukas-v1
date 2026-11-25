@@ -276,7 +276,7 @@ test('a user cannot add a subcategory to someone else\'s category', function () 
         ->post(route('categories.subcategories.store', $category), [
             'name' => 'Rent',
         ])
-        ->assertNotFound();
+        ->assertRedirect(route('dashboard'));
 
     expect($category->subcategories()->count())->toBe(0);
 });
@@ -288,7 +288,7 @@ test('a missing category cannot receive a subcategory', function () {
         ->post(route('categories.subcategories.store', 9999), [
             'name' => 'Rent',
         ])
-        ->assertNotFound();
+        ->assertRedirect(route('dashboard'));
 
     expect(Subcategory::query()->count())->toBe(0);
 });
@@ -438,7 +438,7 @@ test('a user cannot update someone else\'s subcategory', function () {
         ->put(route('categories.subcategories.update', [$category, $subcategory]), [
             'name' => 'Menus',
         ])
-        ->assertNotFound();
+        ->assertRedirect(route('dashboard'));
 
     expect($subcategory->fresh()->name)->toBe('Rappi');
 });
@@ -453,7 +453,7 @@ test('a subcategory cannot be updated through a different category', function ()
         ->put(route('categories.subcategories.update', [$otherCategory, $subcategory]), [
             'name' => 'Menus',
         ])
-        ->assertNotFound();
+        ->assertRedirect(route('dashboard'));
 
     expect($subcategory->fresh()->name)->toBe('Rappi');
 });
@@ -487,7 +487,7 @@ test('a user cannot delete someone else\'s subcategory', function () {
 
     $this->actingAs($someoneElse)
         ->delete(route('categories.subcategories.destroy', [$category, $subcategory]))
-        ->assertNotFound();
+        ->assertRedirect(route('dashboard'));
 
     $this->assertModelExists($subcategory);
 });
@@ -729,7 +729,7 @@ test('a user cannot update someone else\'s category', function () {
             'name' => 'Groceries',
             'color' => 'red',
         ])
-        ->assertNotFound();
+        ->assertRedirect(route('dashboard'));
 
     $category->refresh();
 
@@ -814,7 +814,7 @@ test('a user cannot delete someone else\'s category', function () {
 
     $this->actingAs($someoneElse)
         ->delete(route('categories.destroy', $category))
-        ->assertNotFound();
+        ->assertRedirect(route('dashboard'));
 
     $this->assertModelExists($category);
 });
