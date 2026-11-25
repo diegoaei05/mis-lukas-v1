@@ -10,14 +10,19 @@ GET /expenses
   ExpenseController::index
     the selected year, defaulting to the current year when the request is outside 2000 through 2100
     year buttons for the current year, the selected year and its neighbors, and every year that already has an expense
-    the user's expenses for that year, newest first
+    the user's expenses for that year, newest first, one page at a time
+    a concept search matches the Concepto column only, ignoring case, and treats % and _ as ordinary characters
+    month buttons limit the table to the chosen months; none selected means every month
+    the page size is 10, 25, 50, or 100, and anything else falls back to 25
     each row carries the month name and value, year, type acronym and id, concept, category name or null, category id or null, the category's stored color or null, subcategory name or null, subcategory id or null, currency, amount, and the amount under soles or dollars
     the user's expense types and categories, for the form
-    Inertia::render('expenses/index', { year, years, expenses, expenseTypes, categories, months, currencies })
+    Inertia::render('expenses/index', { year, years, expenses, filters, pagination, perPageOptions, expenseTypes, categories, months, currencies })
       resources/js/pages/expenses/index.tsx
 ```
 
-Year buttons sit under the introduction. The selected year filters the table, and a new expense is saved in that year. The table columns are Mes, Tipo, Concepto, Categoría, Subcategoría, Soles, Dólares, and an Edit action. Mes shows the Spanish month. Tipo shows the acronym. A missing category or subcategory is a white `-` in that column. A category with a stored color shows as a pill in that color. A category with no color is plain text. A subcategory is plain text. The amount sits under Soles or under Dólares, and the other column is empty. An amount greater than 100 is a yellow pill, greater than 200 is an orange pill, and greater than 500 is a red pill. Edit turns the row into fields for the month, type, concept, category, subcategory, and the amount. The type list shows the acronym. The amount is typed in the Soles field or the Dólares field. Both fields stay open. A green check writes the row. A red X closes it. The columns keep the same width. The form above the table stays for new expenses.
+Year buttons sit under the introduction. The selected year filters the table and keeps the concept search, the chosen months, and the page size. A new expense is saved in that year. Above the table, a Concepto field searches that column only. Month buttons (Ene through Dic) limit the rows; All shows every month. A Rows choice sets 10, 25, 50, or 100 rows, with 25 as the default. Previous and Next move between pages. Changing the search, the months, or the page size returns to the first page. The address keeps the choices, so a filtered list can be opened again. When a search or a month is active and nothing matches, the table says "No expenses match these filters." An empty year still says "You have not recorded any expenses for this year." The footer shows which rows are on the page.
+
+The table columns are Mes, Tipo, Concepto, Categoría, Subcategoría, Soles, Dólares, and an Edit action. Mes shows the Spanish month. Tipo shows the acronym. A missing category or subcategory is a white `-` in that column. A category with a stored color shows as a pill in that color. A category with no color is plain text. A subcategory is plain text. The amount sits under Soles or under Dólares, and the other column is empty. An amount greater than 100 is a yellow pill, greater than 200 is an orange pill, and greater than 500 is a red pill. Edit turns the row into fields for the month, type, concept, category, subcategory, and the amount. The type list shows the acronym. The amount is typed in the Soles field or the Dólares field. Both fields stay open. A green check writes the row. A red X closes it. The columns keep the same width. The form above the table stays for new expenses.
 
 The form puts concept and amount first so Tab moves from concept to amount and Enter saves the row. Month, type, and currency stay filled for the next row. The year comes from the selected year button. Category and subcategory start empty and can be left blank. The form is shown once the user has at least one expense type.
 

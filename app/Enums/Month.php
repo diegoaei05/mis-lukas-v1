@@ -39,6 +39,27 @@ enum Month: int
     }
 
     /**
+     * The short name shown on a month filter, such as Ene.
+     */
+    public function short(): string
+    {
+        return match ($this) {
+            self::Enero => 'Ene',
+            self::Febrero => 'Feb',
+            self::Marzo => 'Mar',
+            self::Abril => 'Abr',
+            self::Mayo => 'May',
+            self::Junio => 'Jun',
+            self::Julio => 'Jul',
+            self::Agosto => 'Ago',
+            self::Septiembre => 'Sep',
+            self::Octubre => 'Oct',
+            self::Noviembre => 'Nov',
+            self::Diciembre => 'Dic',
+        };
+    }
+
+    /**
      * Find a month from its dashboard address.
      */
     public static function fromSlug(string $slug): ?self

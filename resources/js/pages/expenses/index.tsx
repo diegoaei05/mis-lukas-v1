@@ -1,4 +1,4 @@
-import { Form, Head, Link, useForm } from '@inertiajs/react';
+import { Form, Head, Link, router, useForm } from '@inertiajs/react';
 import { Check, Pencil, Trash2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import ExpenseController, { update } from '@/actions/App/Http/Controllers/ExpenseController';
@@ -52,6 +52,22 @@ type CategoryOption = {
 type MonthOption = {
     value: number;
     label: string;
+    short: string;
+};
+
+type ExpenseFilters = {
+    concept: string;
+    months: number[];
+    perPage: number;
+};
+
+type ExpensePagination = {
+    currentPage: number;
+    lastPage: number;
+    perPage: number;
+    total: number;
+    from: number | null;
+    to: number | null;
 };
 
 type CurrencyOption = {
@@ -131,7 +147,7 @@ function AmountEditor({ id, amount, error, onAmount }: { id: string; amount: str
     );
 }
 
-export default function ExpensesIndex({ year, years, expenses, expenseTypes, categories, months, currencies }: { year: number; years: number[]; expenses: ExpenseRow[]; expenseTypes: ExpenseTypeOption[]; categories: CategoryOption[]; months: MonthOption[]; currencies: CurrencyOption[] }) {
+export default function ExpensesIndex({ year, years, expenses, filters, pagination, perPageOptions, expenseTypes, categories, months, currencies }: { year: number; years: number[]; expenses: ExpenseRow[]; filters: ExpenseFilters; pagination: ExpensePagination; perPageOptions: number[]; expenseTypes: ExpenseTypeOption[]; categories: CategoryOption[]; months: MonthOption[]; currencies: CurrencyOption[] }) {
     const [month, setMonth] = useState(String(new Date().getMonth() + 1));
     const [expenseTypeId, setExpenseTypeId] = useState(expenseTypes[0] ? String(expenseTypes[0].id) : '');
     const [categoryId, setCategoryId] = useState('');
@@ -139,6 +155,40 @@ export default function ExpensesIndex({ year, years, expenses, expenseTypes, cat
     const [currency, setCurrency] = useState(currencies[0]?.value ?? 'pen');
     const conceptRef = useRef<HTMLInputElement>(null);
     const [editingId, setEditingId] = useState<number | null>(null);
+    const [conceptDraft, setConceptDraft] = useState(filters.concept);
+
+    function listQuery(overrides: { year?: number; concept?: string; months?: number[]; per_page?: number; page?: number } = {}) {
+        const nextConcept = overrides.concept ?? filters.concept;
+        const nextMonths = overrides.months ?? filters.months;
+        const nextPerPage = overrides.per_page ?? filters.perPage;
+        const nextPage = overrides.page;
+
+        return {
+            year: overrides.year ?? year,
+            ...(nextConcept !== '' ? { concept: nextConcept } : {}),
+            ...(nextMonths.length > 0 ? { months: nextMonths } : {}),
+            ...(nextPerPage !== 25 ? { per_page: nextPerPage } : {}),
+            ...(nextPage !== undefined && nextPage > 1 ? { page: nextPage } : {}),
+        };
+    }
+
+    function visit(overrides: { year?: number; concept?: string; months?: number[]; per_page?: number; page?: number }) {
+        router.get(index.url({ query: listQuery(overrides) }), {}, { preserveScroll: true, preserveState: true, replace: true });
+    }
+
+    useEffect(() => {
+        const nextConcept = conceptDraft.trim();
+
+        if (nextConcept === filters.concept) {
+            return;
+        }
+
+        const timeout = window.setTimeout(() => {
+            visit({ concept: nextConcept });
+        }, 300);
+
+        return () => window.clearTimeout(timeout);
+    }, [conceptDraft, filters.concept, filters.months, filters.perPage, year]);
     const filing = useForm({
         month: '',
         year: '',
@@ -216,7 +266,7 @@ export default function ExpensesIndex({ year, years, expenses, expenseTypes, cat
                 <div className="flex flex-wrap gap-2" role="group" aria-label="Year">
                     {years.map((option) => (
                         <Button key={option} variant={option === year ? 'default' : 'outline'} size="sm" asChild>
-                            <Link href={index({ query: { year: option } })} preserveScroll aria-current={option === year ? 'page' : undefined}>
+                            <Link href={index({ query: listQuery({ year: option }) })} preserveScroll aria-current={option === year ? 'page' : undefined}>
                                 {option}
                             </Link>
                         </Button>
@@ -378,6 +428,40 @@ export default function ExpensesIndex({ year, years, expenses, expenseTypes, cat
                     </p>
                 )}
 
+                <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+                        <div className="grid min-w-0 flex-1 gap-2 sm:max-w-sm">
+                            <Label htmlFor="expense-search">Concepto</Label>
+                            <Input id="expense-search" value={conceptDraft} onChange={(event) => setConceptDraft(event.target.value)} placeholder="Search concepto" data-test="expense-search" />
+                        </div>
+                        <div className="grid w-full gap-2 sm:w-28">
+                            <Label htmlFor="expense-per-page">Rows</Label>
+                            <Select value={String(filters.perPage)} onValueChange={(value) => visit({ per_page: Number(value) })}>
+                                <SelectTrigger id="expense-per-page" className="w-full" data-test="expense-per-page">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {perPageOptions.map((option) => (
+                                        <SelectItem key={option} value={String(option)}>
+                                            {option}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2" role="group" aria-label="Months">
+                        <Button type="button" size="sm" variant={filters.months.length === 0 ? 'default' : 'outline'} aria-pressed={filters.months.length === 0} onClick={() => visit({ months: [] })}>
+                            All
+                        </Button>
+                        {months.map((option) => (
+                            <Button key={option.value} type="button" size="sm" variant={filters.months.includes(option.value) ? 'default' : 'outline'} aria-pressed={filters.months.includes(option.value)} onClick={() => visit({ months: filters.months.includes(option.value) ? filters.months.filter((month) => month !== option.value) : [...filters.months, option.value].sort((left, right) => left - right) })}>
+                                {option.short}
+                            </Button>
+                        ))}
+                    </div>
+                </div>
+
                 <div className="overflow-x-auto rounded-xl border border-border bg-card">
                     <table className="w-full table-fixed text-sm [&_td]:break-words [&_th]:break-words">
                         <caption className="sr-only">Your expenses</caption>
@@ -407,7 +491,7 @@ export default function ExpensesIndex({ year, years, expenses, expenseTypes, cat
                             {expenses.length === 0 ? (
                                 <tr>
                                     <td colSpan={8} className="px-4 py-6 text-muted-foreground">
-                                        You have not recorded any expenses for this year.
+                                        {filters.concept !== '' || filters.months.length > 0 ? 'No expenses match these filters.' : 'You have not recorded any expenses for this year.'}
                                     </td>
                                 </tr>
                             ) : (
@@ -595,6 +679,17 @@ export default function ExpensesIndex({ year, years, expenses, expenseTypes, cat
                             )}
                         </tbody>
                     </table>
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+                    <p className="text-muted-foreground">{pagination.total === 0 ? '0 expenses' : `${pagination.from}–${pagination.to} of ${pagination.total}`}</p>
+                    <div className="flex gap-2">
+                        <Button type="button" size="sm" variant="outline" disabled={pagination.currentPage <= 1} onClick={() => visit({ page: pagination.currentPage - 1 })}>
+                            Previous
+                        </Button>
+                        <Button type="button" size="sm" variant="outline" disabled={pagination.currentPage >= pagination.lastPage} onClick={() => visit({ page: pagination.currentPage + 1 })}>
+                            Next
+                        </Button>
+                    </div>
                 </div>
             </div>
         </>

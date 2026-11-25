@@ -19,6 +19,13 @@ use Inertia\Response;
 class ExpenseController extends Controller
 {
     /**
+     * Page sizes the expenses table accepts.
+     *
+     * @var list<int>
+     */
+    private const PER_PAGE_OPTIONS = [10, 25, 50, 100];
+
+    /**
      * Show the signed-in user's expenses.
      */
     public function index(Request $request): Response
@@ -40,12 +47,30 @@ class ExpenseController extends Controller
             ->values()
             ->all();
 
-        $expenses = $request->user()
+        $concept = $this->concept($request);
+        $months = $this->months($request);
+        $perPage = $this->perPage($request);
+
+        $expensesQuery = $request->user()
             ->expenses()
-            ->where('year', $year)
+            ->where('year', $year);
+
+        if ($concept !== '') {
+            $expensesQuery->whereRaw('LOWER(concept) LIKE ? ESCAPE ?', ['%'.mb_strtolower(addcslashes($concept, '%_\\')).'%', '\\']);
+        }
+
+        if ($months !== []) {
+            $expensesQuery->whereIn('month', $months);
+        }
+
+        $paginator = $expensesQuery
             ->with(['expenseType', 'category', 'subcategory.category'])
-            ->latest()
-            ->get()
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        $expenses = $paginator->getCollection()
             ->map(fn (Expense $expense): array => [
                 'id' => $expense->id,
                 'month' => $expense->month->name,
@@ -100,11 +125,26 @@ class ExpenseController extends Controller
             'year' => $year,
             'years' => $years,
             'expenses' => $expenses,
+            'filters' => [
+                'concept' => $concept,
+                'months' => $months,
+                'perPage' => $perPage,
+            ],
+            'pagination' => [
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'perPage' => $paginator->perPage(),
+                'total' => $paginator->total(),
+                'from' => $paginator->firstItem(),
+                'to' => $paginator->lastItem(),
+            ],
+            'perPageOptions' => self::PER_PAGE_OPTIONS,
             'expenseTypes' => $expenseTypes,
             'categories' => $categories,
             'months' => array_map(fn (Month $month): array => [
                 'value' => $month->value,
                 'label' => $month->name,
+                'short' => $month->short(),
             ], Month::cases()),
             'currencies' => array_map(fn (Currency $currency): array => [
                 'value' => $currency->value,
@@ -198,5 +238,60 @@ class ExpenseController extends Controller
         }
 
         return $year;
+    }
+
+    /**
+     * The concept text to match, trimmed to the column length.
+     */
+    private function concept(Request $request): string
+    {
+        return mb_substr(trim($request->string('concept')->toString()), 0, 255);
+    }
+
+    /**
+     * The months to include. An empty list means every month.
+     *
+     * @return list<int>
+     */
+    private function months(Request $request): array
+    {
+        $months = $request->input('months', []);
+
+        if (! is_array($months)) {
+            return [];
+        }
+
+        $selected = [];
+
+        foreach ($months as $month) {
+            if (! is_numeric($month)) {
+                continue;
+            }
+
+            $value = (int) $month;
+
+            if ($value >= 1 && $value <= 12) {
+                $selected[$value] = $value;
+            }
+        }
+
+        $selected = array_values($selected);
+        sort($selected);
+
+        return $selected;
+    }
+
+    /**
+     * Keep the page size to one of the offered choices.
+     */
+    private function perPage(Request $request): int
+    {
+        $perPage = $request->integer('per_page');
+
+        if (! in_array($perPage, self::PER_PAGE_OPTIONS, true)) {
+            return 25;
+        }
+
+        return $perPage;
     }
 }

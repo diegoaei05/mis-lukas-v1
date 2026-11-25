@@ -152,7 +152,137 @@ test('a user sees only their expenses with the type acronym and one currency col
             ->where('expenses.1.concept', 'Koanna - Rest')
             ->where('expenses.1.soles', '47.00')
             ->where('expenses.1.dollars', null)
-            ->missing('expenses.2'),
+            ->missing('expenses.2')
+            ->where('filters.concept', '')
+            ->where('filters.months', [])
+            ->where('filters.perPage', 25)
+            ->where('pagination.total', 2),
+        );
+});
+
+test('the expense list can be searched by concept', function () {
+    ['user' => $user, 'category' => $category, 'subcategory' => $subcategory, 'expenseType' => $expenseType] = expenseOwner();
+
+    Expense::factory()->create([
+        'user_id' => $user->id,
+        'expense_type_id' => $expenseType->id,
+        'category_id' => $category->id,
+        'subcategory_id' => null,
+        'month' => 1,
+        'year' => 2026,
+        'concept' => 'Koanna - Rest',
+    ]);
+
+    Expense::factory()->create([
+        'user_id' => $user->id,
+        'expense_type_id' => $expenseType->id,
+        'category_id' => $category->id,
+        'subcategory_id' => null,
+        'month' => 1,
+        'year' => 2026,
+        'concept' => '100% off',
+    ]);
+
+    Expense::factory()->create([
+        'user_id' => $user->id,
+        'expense_type_id' => $expenseType->id,
+        'category_id' => $category->id,
+        'subcategory_id' => null,
+        'month' => 1,
+        'year' => 2026,
+        'concept' => '1000',
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('expenses.index', ['year' => 2026, 'concept' => 'koanna']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('expenses', 1)
+            ->where('expenses.0.concept', 'Koanna - Rest')
+            ->where('filters.concept', 'koanna'),
+        );
+
+    $this->get(route('expenses.index', ['year' => 2026, 'concept' => 'Comida']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->has('expenses', 0));
+
+    $this->get(route('expenses.index', ['year' => 2026, 'concept' => '100%']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('expenses', 1)
+            ->where('expenses.0.concept', '100% off'),
+        );
+});
+
+test('the expense list can be limited to chosen months', function () {
+    ['user' => $user, 'expenseType' => $expenseType] = expenseOwner();
+
+    Expense::factory()->create([
+        'user_id' => $user->id,
+        'expense_type_id' => $expenseType->id,
+        'month' => 1,
+        'year' => 2026,
+        'concept' => 'January taxi',
+    ]);
+
+    Expense::factory()->create([
+        'user_id' => $user->id,
+        'expense_type_id' => $expenseType->id,
+        'month' => 2,
+        'year' => 2026,
+        'concept' => 'February taxi',
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('expenses.index', ['year' => 2026, 'months' => [2, 99, 'nope']]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('expenses', 1)
+            ->where('expenses.0.concept', 'February taxi')
+            ->where('filters.months', [2]),
+        );
+});
+
+test('the expense list paginates and keeps a known page size', function () {
+    ['user' => $user, 'expenseType' => $expenseType] = expenseOwner();
+
+    foreach (range(1, 11) as $index) {
+        Expense::factory()->create([
+            'user_id' => $user->id,
+            'expense_type_id' => $expenseType->id,
+            'month' => 1,
+            'year' => 2026,
+            'concept' => 'Expense '.$index,
+            'created_at' => now()->subMinutes(11 - $index),
+        ]);
+    }
+
+    $this->actingAs($user)
+        ->get(route('expenses.index', ['year' => 2026, 'per_page' => 10]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('expenses', 10)
+            ->where('expenses.0.concept', 'Expense 11')
+            ->where('filters.perPage', 10)
+            ->where('pagination.currentPage', 1)
+            ->where('pagination.lastPage', 2)
+            ->where('pagination.total', 11)
+            ->where('pagination.from', 1)
+            ->where('pagination.to', 10),
+        );
+
+    $this->get(route('expenses.index', ['year' => 2026, 'per_page' => 10, 'page' => 2]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('expenses', 1)
+            ->where('expenses.0.concept', 'Expense 1'),
+        );
+
+    $this->get(route('expenses.index', ['year' => 2026, 'per_page' => 7]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('expenses', 11)
+            ->where('filters.perPage', 25),
         );
 });
 
