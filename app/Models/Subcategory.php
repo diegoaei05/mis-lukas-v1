@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CategoryColor;
 use Database\Factories\SubcategoryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,14 +15,27 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $category_id
  * @property string $name
+ * @property CategoryColor|null $color
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name'])]
+#[Fillable(['name', 'color'])]
 class Subcategory extends Model
 {
     /** @use HasFactory<SubcategoryFactory> */
     use HasFactory;
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'color' => CategoryColor::class,
+        ];
+    }
 
     /**
      * Get the category that owns the subcategory.

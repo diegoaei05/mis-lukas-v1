@@ -18,6 +18,13 @@ const categoryHex: Record<string, string> = {
     blue: '#7dc6fd',
     gold: '#efcb60',
     red: '#ff4343',
+    orange: '#ffb066',
+    teal: '#6dcec4',
+    pink: '#f4a4cc',
+    indigo: '#a8b0f5',
+    coral: '#ff9a8a',
+    cyan: '#7ad7ef',
+    magenta: '#e7a0dc',
 };
 
 const fallbackHex = ['#8f7628', '#737373', '#4C78A8', '#d4d4d4', '#a1a1a1', '#6f5b1e'];

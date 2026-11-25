@@ -349,8 +349,14 @@ test('a group in the category address sends the user to the dashboard', function
 test('a category ring groups fixed bills by subcategory and uses a paid amount', function () {
     $user = User::factory()->create();
     $vivienda = Category::factory()->for($user)->create(['name' => 'Vivienda']);
-    $renta = Subcategory::factory()->for($vivienda)->create(['name' => 'Renta']);
-    $internet = Subcategory::factory()->for($vivienda)->create(['name' => 'Internet']);
+    $renta = Subcategory::factory()->for($vivienda)->create([
+        'name' => 'Renta',
+        'color' => CategoryColor::Blue,
+    ]);
+    $internet = Subcategory::factory()->for($vivienda)->create([
+        'name' => 'Internet',
+        'color' => CategoryColor::Pink,
+    ]);
     $otros = Category::factory()->for($user)->create(['name' => 'Otros']);
     $cursor = Subcategory::factory()->for($otros)->create(['name' => 'Cursor']);
     $expenseType = ExpenseType::factory()->for($user)->create();
@@ -385,8 +391,10 @@ test('a category ring groups fixed bills by subcategory and uses a paid amount',
             ->where('category', 'Vivienda')
             ->has('soles.fixed', 2)
             ->where('soles.fixed.0.category', 'Renta')
+            ->where('soles.fixed.0.color', 'blue')
             ->where('soles.fixed.0.amount', '1700.00')
             ->where('soles.fixed.1.category', 'Internet')
+            ->where('soles.fixed.1.color', 'pink')
             ->where('soles.fixed.1.amount', '100.00')
             ->has('soles.variable', 0)
             ->has('dollars.fixed', 0)
@@ -398,8 +406,14 @@ test('a category ring groups variable expenses by subcategory', function () {
     $user = User::factory()->create();
     Category::factory()->for(User::factory())->create(['name' => 'Ajena']);
     $comida = Category::factory()->for($user)->create(['name' => 'Comida']);
-    $restaurants = Subcategory::factory()->for($comida)->create(['name' => 'Restaurantes']);
-    $menus = Subcategory::factory()->for($comida)->create(['name' => 'Menus']);
+    $restaurants = Subcategory::factory()->for($comida)->create([
+        'name' => 'Restaurantes',
+        'color' => CategoryColor::Teal,
+    ]);
+    $menus = Subcategory::factory()->for($comida)->create([
+        'name' => 'Menus',
+        'color' => CategoryColor::Orange,
+    ]);
     $otros = Category::factory()->for($user)->create(['name' => 'Otros']);
     $misc = Subcategory::factory()->for($otros)->create(['name' => 'Misc']);
     $expenseType = ExpenseType::factory()->for($user)->create();
@@ -463,10 +477,13 @@ test('a category ring groups variable expenses by subcategory', function () {
             ->has('soles.fixed', 0)
             ->has('soles.variable', 3)
             ->where('soles.variable.0.category', 'Restaurantes')
+            ->where('soles.variable.0.color', 'teal')
             ->where('soles.variable.0.amount', '15.50')
             ->where('soles.variable.1.category', 'Menus')
+            ->where('soles.variable.1.color', 'orange')
             ->where('soles.variable.1.amount', '4.00')
             ->where('soles.variable.2.category', null)
+            ->where('soles.variable.2.color', null)
             ->where('soles.variable.2.amount', '2.00')
             ->has('dollars.fixed', 0)
             ->has('dollars.variable', 1)

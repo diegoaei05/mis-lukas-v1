@@ -36,7 +36,10 @@ test('a user sees only their categories and subcategories', function () {
         'name' => 'Food',
         'color' => CategoryColor::Green,
     ]);
-    Subcategory::factory()->for($category)->create(['name' => 'Super/Market']);
+    Subcategory::factory()->for($category)->create([
+        'name' => 'Super/Market',
+        'color' => CategoryColor::Orange,
+    ]);
 
     $someoneElse = User::factory()->create();
     $hiddenCategory = Category::factory()->for($someoneElse)->create(['name' => 'Transport']);
@@ -50,9 +53,10 @@ test('a user sees only their categories and subcategories', function () {
             ->has('categories', 1)
             ->where('categories.0.name', 'Food')
             ->where('categories.0.color', 'green')
-            ->has('colors', 5)
+            ->has('colors', 12)
             ->has('categories.0.subcategories', 1)
             ->where('categories.0.subcategories.0.name', 'Super/Market')
+            ->where('categories.0.subcategories.0.color', 'orange')
             ->missing('categories.1'),
         );
 });
@@ -172,7 +176,7 @@ test('a category color must be one of the pill colors', function () {
         ->from(route('categories.index'))
         ->post(route('categories.store'), [
             'name' => 'Food',
-            'color' => 'pink',
+            'color' => 'silver',
         ])
         ->assertRedirect(route('categories.index'))
         ->assertInvalid(['color' => 'The selected color is invalid.'], 'createCategory');
@@ -187,10 +191,95 @@ test('a user can create a subcategory on their category', function () {
     $this->actingAs($user)
         ->post(route('categories.subcategories.store', $category), [
             'name' => 'Super/Market',
+            'color' => 'teal',
         ])
         ->assertRedirect(route('categories.index', ['category' => $category->id]));
 
-    expect($category->subcategories()->where('name', 'Super/Market')->exists())->toBeTrue();
+    expect($category->subcategories()->first())
+        ->name->toBe('Super/Market')
+        ->color->toBe(CategoryColor::Teal);
+});
+
+test('a subcategory color is required', function (mixed $color) {
+    $user = User::factory()->create();
+    $category = Category::factory()->for($user)->create();
+    $payload = ['name' => 'Super/Market'];
+
+    if ($color !== null) {
+        $payload['color'] = $color;
+    }
+
+    $this->actingAs($user)
+        ->from(route('categories.index'))
+        ->post(route('categories.subcategories.store', $category), $payload)
+        ->assertRedirect(route('categories.index'))
+        ->assertInvalid(['color' => 'The color field is required.'], 'subcategory-'.$category->id);
+
+    expect($category->subcategories()->count())->toBe(0);
+})->with([
+    'missing' => null,
+    'blank' => '',
+]);
+
+test('a subcategory color must be one of the pill colors', function () {
+    $user = User::factory()->create();
+    $category = Category::factory()->for($user)->create();
+
+    $this->actingAs($user)
+        ->from(route('categories.index'))
+        ->post(route('categories.subcategories.store', $category), [
+            'name' => 'Super/Market',
+            'color' => 'silver',
+        ])
+        ->assertRedirect(route('categories.index'))
+        ->assertInvalid(['color' => 'The selected color is invalid.'], 'subcategory-'.$category->id);
+
+    expect($category->subcategories()->count())->toBe(0);
+});
+
+test('a subcategory color is required when updating', function (mixed $color) {
+    $user = User::factory()->create();
+    $category = Category::factory()->for($user)->create();
+    $subcategory = Subcategory::factory()->for($category)->create([
+        'name' => 'Super/Market',
+        'color' => CategoryColor::Green,
+    ]);
+    $payload = ['name' => 'Super/Market'];
+
+    if ($color !== null) {
+        $payload['color'] = $color;
+    }
+
+    $this->actingAs($user)
+        ->from(route('categories.index', ['category' => $category->id]))
+        ->put(route('categories.subcategories.update', [$category, $subcategory]), $payload)
+        ->assertRedirect(route('categories.index', ['category' => $category->id]))
+        ->assertInvalid(['color' => 'The color field is required.'], 'updateSubcategory-'.$subcategory->id);
+
+    expect($subcategory->fresh()->color)->toBe(CategoryColor::Green);
+})->with([
+    'missing' => null,
+    'blank' => '',
+]);
+
+test('a subcategory color must be one of the pill colors when updating', function () {
+    $user = User::factory()->create();
+    $category = Category::factory()->for($user)->create();
+    $subcategory = Subcategory::factory()->for($category)->create([
+        'name' => 'Super/Market',
+        'color' => CategoryColor::Green,
+    ]);
+
+    $this->actingAs($user)
+        ->from(route('categories.index', ['category' => $category->id]))
+        ->put(route('categories.subcategories.update', [$category, $subcategory]), [
+            'name' => 'Super/Market',
+            'color' => 'silver',
+        ])
+        ->assertRedirect(route('categories.index', ['category' => $category->id]))
+        ->assertInvalid(['color' => 'The selected color is invalid.'], 'updateSubcategory-'.$subcategory->id);
+
+    expect($subcategory->fresh()->color)->toBe(CategoryColor::Green);
 });
 
 test('a subcategory name is required', function (string $name) {
@@ -252,6 +341,7 @@ test('a user can reuse a subcategory name on a different category', function () 
     $this->actingAs($user)
         ->post(route('categories.subcategories.store', $transport), [
             'name' => 'Other',
+            'color' => 'green',
         ])
         ->assertRedirect(route('categories.index', ['category' => $transport->id]));
 
@@ -310,10 +400,13 @@ test('a user can update a subcategory name', function () {
     $this->actingAs($user)
         ->put(route('categories.subcategories.update', [$category, $subcategory]), [
             'name' => 'Groceries',
+            'color' => 'pink',
         ])
         ->assertRedirect(route('categories.index', ['category' => $category->id]));
 
-    expect($subcategory->fresh()->name)->toBe('Groceries');
+    expect($subcategory->fresh())
+        ->name->toBe('Groceries')
+        ->color->toBe(CategoryColor::Pink);
 });
 
 test('a user can keep a subcategory name', function () {
@@ -324,6 +417,7 @@ test('a user can keep a subcategory name', function () {
     $this->actingAs($user)
         ->put(route('categories.subcategories.update', [$category, $subcategory]), [
             'name' => 'Super/Market',
+            'color' => 'green',
         ])
         ->assertRedirect(route('categories.index', ['category' => $category->id]));
 
@@ -393,6 +487,7 @@ test('a user can rename a subcategory to a name used on a different category', f
     $this->actingAs($user)
         ->put(route('categories.subcategories.update', [$transport, $subcategory]), [
             'name' => 'Other',
+            'color' => 'green',
         ])
         ->assertRedirect(route('categories.index', ['category' => $transport->id]));
 
@@ -408,6 +503,7 @@ test('a subcategory stays on its category when another category id is submitted'
     $this->actingAs($user)
         ->put(route('categories.subcategories.update', [$category, $subcategory]), [
             'name' => 'Menus',
+            'color' => 'green',
             'category_id' => $otherCategory->id,
         ])
         ->assertRedirect(route('categories.index', ['category' => $category->id]));
@@ -697,7 +793,7 @@ test('a category color must be one of the pill colors when updating', function (
         ->from(route('categories.index', ['category' => $category->id]))
         ->put(route('categories.update', $category), [
             'name' => 'Food',
-            'color' => 'pink',
+            'color' => 'silver',
         ])
         ->assertRedirect(route('categories.index', ['category' => $category->id]))
         ->assertInvalid(['color' => 'The selected color is invalid.'], 'updateCategory-'.$category->id);

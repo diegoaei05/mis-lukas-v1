@@ -1,5 +1,5 @@
 import { Form, Head } from '@inertiajs/react';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Check, Pencil, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import CategoryController from '@/actions/App/Http/Controllers/CategoryController';
 import SubcategoryController from '@/actions/App/Http/Controllers/SubcategoryController';
@@ -16,6 +16,7 @@ import { index } from '@/routes/categories';
 type SubcategoryItem = {
     id: number;
     name: string;
+    color: string | null;
 };
 
 type CategoryItem = {
@@ -87,15 +88,19 @@ function NewCategoryFields({ colors, color, onColorChange, errors, processing, w
     );
 }
 
-function SubcategoryNameForm({ subcategoryId, categoryId, name, onSaved }: { subcategoryId: number; categoryId: number; name: string; onSaved: () => void }) {
+function SubcategoryNameForm({ subcategoryId, categoryId, name, color, colors, onSaved }: { subcategoryId: number; categoryId: number; name: string; color: string; colors: ColorOption[]; onSaved: () => void }) {
+    const [selectedColor, setSelectedColor] = useState(color);
+
     return (
-        <Form {...SubcategoryController.update.form({ category: categoryId, subcategory: subcategoryId })} errorBag={`updateSubcategory-${subcategoryId}`} disableWhileProcessing className="flex items-start gap-2">
-            {({ errors, processing, wasSuccessful }) => <SubcategoryNameFields subcategoryId={subcategoryId} name={name} errors={errors} processing={processing} wasSuccessful={wasSuccessful} onSaved={onSaved} />}
+        <Form {...SubcategoryController.update.form({ category: categoryId, subcategory: subcategoryId })} errorBag={`updateSubcategory-${subcategoryId}`} disableWhileProcessing className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-start">
+            {({ errors, processing, wasSuccessful }) => (
+                <SubcategoryNameFields subcategoryId={subcategoryId} name={name} colors={colors} color={selectedColor} onColorChange={setSelectedColor} errors={errors} processing={processing} wasSuccessful={wasSuccessful} onSaved={onSaved} />
+            )}
         </Form>
     );
 }
 
-function SubcategoryNameFields({ subcategoryId, name, errors, processing, wasSuccessful, onSaved }: { subcategoryId: number; name: string; errors: Record<string, string>; processing: boolean; wasSuccessful: boolean; onSaved: () => void }) {
+function SubcategoryNameFields({ subcategoryId, name, colors, color, onColorChange, errors, processing, wasSuccessful, onSaved }: { subcategoryId: number; name: string; colors: ColorOption[]; color: string; onColorChange: (value: string) => void; errors: Record<string, string>; processing: boolean; wasSuccessful: boolean; onSaved: () => void }) {
     useEffect(() => {
         if (wasSuccessful) {
             onSaved();
@@ -105,14 +110,45 @@ function SubcategoryNameFields({ subcategoryId, name, errors, processing, wasSuc
     return (
         <>
             <div className="grid min-w-0 flex-1 gap-2">
-                <Label htmlFor={`update-subcategory-name-${subcategoryId}`} className="sr-only">
-                    Subcategory name
-                </Label>
+                <Label htmlFor={`update-subcategory-name-${subcategoryId}`}>Subcategory</Label>
                 <Input id={`update-subcategory-name-${subcategoryId}`} name="name" required defaultValue={name} data-test={`update-subcategory-name-${subcategoryId}`} />
                 <InputError message={errors.name} />
             </div>
-            <Button type="submit" disabled={processing} data-test={`update-subcategory-button-${subcategoryId}`}>
-                Save
+            <ColorSelect id={`update-subcategory-color-${subcategoryId}`} colors={colors} value={color} onValueChange={onColorChange} testPrefix={`update-subcategory-${subcategoryId}`} error={errors.color} />
+            <Button type="submit" variant="outline" size="icon-sm" disabled={processing} className="shrink-0 border-transparent bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-600/30 sm:mt-6" aria-label={`Save ${name}`} data-test={`update-subcategory-button-${subcategoryId}`}>
+                <Check className="size-3.5" />
+            </Button>
+        </>
+    );
+}
+
+function NewSubcategoryForm({ categoryId, categoryName, colors }: { categoryId: number; categoryName: string; colors: ColorOption[] }) {
+    const [color, setColor] = useState('');
+
+    return (
+        <Form {...SubcategoryController.store.form(categoryId)} errorBag={`subcategory-${categoryId}`} resetOnSuccess disableWhileProcessing className="flex flex-col gap-2 border-t border-border bg-muted/30 p-3 sm:flex-row sm:items-start">
+            {({ errors, processing, wasSuccessful }) => <NewSubcategoryFields categoryId={categoryId} categoryName={categoryName} colors={colors} color={color} onColorChange={setColor} errors={errors} processing={processing} wasSuccessful={wasSuccessful} />}
+        </Form>
+    );
+}
+
+function NewSubcategoryFields({ categoryId, categoryName, colors, color, onColorChange, errors, processing, wasSuccessful }: { categoryId: number; categoryName: string; colors: ColorOption[]; color: string; onColorChange: (value: string) => void; errors: Record<string, string>; processing: boolean; wasSuccessful: boolean }) {
+    useEffect(() => {
+        if (wasSuccessful) {
+            onColorChange('');
+        }
+    }, [wasSuccessful, onColorChange]);
+
+    return (
+        <>
+            <div className="grid min-w-0 flex-1 gap-2">
+                <Label htmlFor={`subcategory-name-${categoryId}`}>Subcategory</Label>
+                <Input id={`subcategory-name-${categoryId}`} name="name" required placeholder={`Add a subcategory to ${categoryName}`} data-test={`subcategory-name-${categoryId}`} />
+                <InputError message={errors.name} />
+            </div>
+            <ColorSelect id={`subcategory-color-${categoryId}`} colors={colors} value={color} onValueChange={onColorChange} testPrefix={`subcategory-${categoryId}`} error={errors.color} />
+            <Button type="submit" variant="outline" disabled={processing} className="sm:mt-6" data-test={`create-subcategory-button-${categoryId}`}>
+                Add
             </Button>
         </>
     );
@@ -146,6 +182,50 @@ function UpdateCategoryFields({ category, colors, color, onColorChange, errors, 
             <Button type="submit" disabled={processing} className="sm:mt-6" data-test={`update-category-button-${category.id}`}>
                 Save category
             </Button>
+        </>
+    );
+}
+
+function SubcategoryActions({ subcategory, categoryId, categoryName, editing, onEdit }: { subcategory: SubcategoryItem; categoryId: number; categoryName: string; editing: boolean; onEdit: () => void }) {
+    return (
+        <>
+            {editing ? null : (
+                <Button type="button" variant="outline" size="icon-sm" className="shrink-0 border-transparent bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-600/30" aria-label={`Edit ${subcategory.name}`} onClick={onEdit} data-test={`edit-subcategory-${subcategory.id}`}>
+                    <Pencil className="size-3.5" />
+                </Button>
+            )}
+            <Dialog>
+                <DialogTrigger asChild>
+                    <Button type="button" variant="destructive" size="icon-sm" className="shrink-0" aria-label={`Delete ${subcategory.name}`} data-test={`delete-subcategory-${subcategory.id}`}>
+                        <Trash2 className="size-3.5" />
+                        <span className="sr-only">Delete</span>
+                    </Button>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogTitle>Delete {subcategory.name}?</DialogTitle>
+                    <DialogDescription>This removes {subcategory.name} from {categoryName}. You cannot undo this.</DialogDescription>
+                    <Form
+                        {...SubcategoryController.destroy.form({
+                            category: categoryId,
+                            subcategory: subcategory.id,
+                        })}
+                        disableWhileProcessing
+                    >
+                        {({ processing }) => (
+                            <DialogFooter className="gap-2">
+                                <DialogClose asChild>
+                                    <Button type="button" variant="secondary">
+                                        Cancel
+                                    </Button>
+                                </DialogClose>
+                                <Button type="submit" variant="destructive" disabled={processing} data-test={`confirm-delete-subcategory-${subcategory.id}`}>
+                                    Delete subcategory
+                                </Button>
+                            </DialogFooter>
+                        )}
+                    </Form>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }
@@ -262,76 +342,37 @@ export default function CategoriesIndex({ categories, selectedCategoryId, colors
                                 ) : (
                                     selectedCategory.subcategories.map((subcategory) => (
                                         <tr key={subcategory.id} className="border-b border-border/70 last:border-b-0">
-                                            <td className="px-4 py-2">
-                                                {editingSubcategoryId === subcategory.id ? (
-                                                    <SubcategoryNameForm subcategoryId={subcategory.id} categoryId={selectedCategory.id} name={subcategory.name} onSaved={closeSubcategoryEditor} />
-                                                ) : (
-                                                    subcategory.name
-                                                )}
-                                            </td>
-                                            <td className="px-2 py-1 text-right whitespace-nowrap">
-                                                <div className="flex justify-end gap-1.5">
-                                                    <Button type="button" variant="outline" size="icon-sm" className="shrink-0 border-transparent bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-600/30" aria-pressed={editingSubcategoryId === subcategory.id} aria-label={`Edit ${subcategory.name}`} onClick={() => setEditingSubcategoryId((current) => (current === subcategory.id ? null : subcategory.id))} data-test={`edit-subcategory-${subcategory.id}`}>
-                                                        <Pencil className="size-3.5" />
-                                                    </Button>
-                                                    <Dialog>
-                                                    <DialogTrigger asChild>
-                                                        <Button type="button" variant="destructive" size="icon-sm" className="shrink-0" aria-label={`Delete ${subcategory.name}`} data-test={`delete-subcategory-${subcategory.id}`}>
-                                                            <Trash2 className="size-3.5" />
-                                                            <span className="sr-only">Delete</span>
-                                                        </Button>
-                                                    </DialogTrigger>
-                                                    <DialogContent>
-                                                        <DialogTitle>Delete {subcategory.name}?</DialogTitle>
-                                                        <DialogDescription>
-                                                            This removes {subcategory.name} from {selectedCategory.name}. You cannot undo this.
-                                                        </DialogDescription>
-                                                        <Form
-                                                            {...SubcategoryController.destroy.form({
-                                                                category: selectedCategory.id,
-                                                                subcategory: subcategory.id,
-                                                            })}
-                                                            disableWhileProcessing
-                                                        >
-                                                            {({ processing }) => (
-                                                                <DialogFooter className="gap-2">
-                                                                    <DialogClose asChild>
-                                                                        <Button type="button" variant="secondary">
-                                                                            Cancel
-                                                                        </Button>
-                                                                    </DialogClose>
-                                                                    <Button type="submit" variant="destructive" disabled={processing} data-test={`confirm-delete-subcategory-${subcategory.id}`}>
-                                                                        Delete subcategory
-                                                                    </Button>
-                                                                </DialogFooter>
-                                                            )}
-                                                        </Form>
-                                                    </DialogContent>
-                                                    </Dialog>
-                                                </div>
-                                            </td>
+                                            {editingSubcategoryId === subcategory.id ? (
+                                                <td colSpan={2} className="px-4 py-3">
+                                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+                                                        <SubcategoryNameForm subcategoryId={subcategory.id} categoryId={selectedCategory.id} name={subcategory.name} color={subcategory.color ?? ''} colors={colors} onSaved={closeSubcategoryEditor} />
+                                                        <div className="flex shrink-0 gap-1.5 sm:mt-6">
+                                                            <SubcategoryActions subcategory={subcategory} categoryId={selectedCategory.id} categoryName={selectedCategory.name} editing onEdit={() => setEditingSubcategoryId((current) => (current === subcategory.id ? null : subcategory.id))} />
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            ) : (
+                                                <>
+                                                    <td className="px-4 py-2">
+                                                        <span className="flex items-center gap-2">
+                                                            {categoryFillClass(subcategory.color) !== '' && <span className={cn('size-3 shrink-0 rounded-full', categoryFillClass(subcategory.color))} />}
+                                                            {subcategory.name}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-2 py-1 text-right whitespace-nowrap">
+                                                        <div className="flex justify-end gap-1.5">
+                                                            <SubcategoryActions subcategory={subcategory} categoryId={selectedCategory.id} categoryName={selectedCategory.name} editing={false} onEdit={() => setEditingSubcategoryId((current) => (current === subcategory.id ? null : subcategory.id))} />
+                                                        </div>
+                                                    </td>
+                                                </>
+                                            )}
                                         </tr>
                                     ))
                                 )}
                             </tbody>
                         </table>
 
-                        <Form {...SubcategoryController.store.form(selectedCategory.id)} errorBag={`subcategory-${selectedCategory.id}`} resetOnSuccess disableWhileProcessing className="flex items-start gap-2 border-t border-border bg-muted/30 p-3">
-                            {({ errors, processing }) => (
-                                <>
-                                    <div className="grid min-w-0 flex-1 gap-2">
-                                        <Label htmlFor={`subcategory-name-${selectedCategory.id}`} className="sr-only">
-                                            Add a subcategory to {selectedCategory.name}
-                                        </Label>
-                                        <Input id={`subcategory-name-${selectedCategory.id}`} name="name" required placeholder={`Add a subcategory to ${selectedCategory.name}`} data-test={`subcategory-name-${selectedCategory.id}`} />
-                                        <InputError message={errors.name} />
-                                    </div>
-                                    <Button type="submit" variant="outline" disabled={processing} data-test={`create-subcategory-button-${selectedCategory.id}`}>
-                                        Add
-                                    </Button>
-                                </>
-                            )}
-                        </Form>
+                        <NewSubcategoryForm key={selectedCategory.id} categoryId={selectedCategory.id} categoryName={selectedCategory.name} colors={colors} />
                     </div>
                 ) : (
                     <p className="text-sm text-muted-foreground">You have not created any categories yet.</p>

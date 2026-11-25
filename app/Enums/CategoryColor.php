@@ -9,6 +9,13 @@ enum CategoryColor: string
     case Blue = 'blue';
     case Gold = 'gold';
     case Red = 'red';
+    case Orange = 'orange';
+    case Teal = 'teal';
+    case Pink = 'pink';
+    case Indigo = 'indigo';
+    case Coral = 'coral';
+    case Cyan = 'cyan';
+    case Magenta = 'magenta';
 
     /**
      * The name shown next to the color when a category is created.
@@ -21,6 +28,13 @@ enum CategoryColor: string
             self::Blue => 'Blue',
             self::Gold => 'Gold',
             self::Red => 'Red',
+            self::Orange => 'Orange',
+            self::Teal => 'Teal',
+            self::Pink => 'Pink',
+            self::Indigo => 'Indigo',
+            self::Coral => 'Coral',
+            self::Cyan => 'Cyan',
+            self::Magenta => 'Magenta',
         };
     }
 

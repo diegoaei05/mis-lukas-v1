@@ -273,7 +273,7 @@ class DashboardController extends Controller
             $subcategory = $bill->subcategory;
             $payment = $bill->payments->first();
             $amount = $payment === null ? (string) $bill->amount : (string) $payment->amount;
-            $this->addSlice($totals, (string) $subcategory->id, $subcategory->name, null, $amount);
+            $this->addSlice($totals, (string) $subcategory->id, $subcategory->name, $subcategory->color?->value, $amount);
         }
 
         return $this->sortedSlices($totals);
@@ -305,7 +305,7 @@ class DashboardController extends Controller
 
             $subcategory = $expense->subcategory;
             $key = $subcategory === null ? 'none' : (string) $subcategory->id;
-            $this->addSlice($totals, $key, $subcategory?->name, null, (string) $expense->amount);
+            $this->addSlice($totals, $key, $subcategory?->name, $subcategory?->color?->value, (string) $expense->amount);
         }
 
         return $this->sortedSlices($totals);

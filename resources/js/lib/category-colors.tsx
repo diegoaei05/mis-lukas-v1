@@ -6,6 +6,13 @@ const categoryFills: Record<string, string> = {
     blue: 'bg-category-blue',
     gold: 'bg-category-gold',
     red: 'bg-category-red',
+    orange: 'bg-category-orange',
+    teal: 'bg-category-teal',
+    pink: 'bg-category-pink',
+    indigo: 'bg-category-indigo',
+    coral: 'bg-category-coral',
+    cyan: 'bg-category-cyan',
+    magenta: 'bg-category-magenta',
 };
 
 export function categoryFillClass(color: string | null): string {

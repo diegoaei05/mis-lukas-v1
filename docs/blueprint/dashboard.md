@@ -52,6 +52,8 @@ GET /dashboard/{year}/{month}/{category}
     fixed: that category's bills in each currency, summed by subcategory
     a payment for that month replaces the bill's usual amount
     variable: that category's expenses in each currency for that month, summed by subcategory
+    a subcategory with a stored color uses that color
+    a subcategory with no color gets a separate neutral color
     an expense in the category with no subcategory is its own slice
     another category, month, or user is left out
     a slice of 0.00 is left out
@@ -61,6 +63,6 @@ GET /dashboard/{year}/{month}/{category}
       resources/js/pages/dashboard/subcategories.tsx
 ```
 
-The subcategory page draws Soles and Dólares. Each currency has two rings, Fijos and Variables. Each slice shows its share. A link back to the month sits at the top, then a button for each of the user's categories.
+The subcategory page draws Soles and Dólares. Each currency has two rings, Fijos and Variables. Each slice shows its share. A subcategory with a stored color uses that color. A subcategory with no color gets a separate neutral color. A link back to the month sits at the top, then a button for each of the user's categories.
 
 These screens do not write to the database.

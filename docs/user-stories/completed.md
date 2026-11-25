@@ -68,11 +68,12 @@ A signed-in user files spending under categories they create, and under subcateg
 **Acceptance:**
 
 - A signed-in, verified user can open Categories from the main navigation.
-- They can create a category by name and one of the five pill colors, and it appears in their list in that color.
+- They can create a category by name and one of the twelve pill colors, and it appears in their list in that color.
 - They can update a chosen category's name and color after clicking Edit. The name and color fields stay hidden until then. The category keeps its subcategories. Saving its current name is allowed. A name they already use on another category is shown on the form and is not saved.
 - They can delete a chosen category that has no expenses. The trash icon asks for confirmation, then removes that category and its subcategories. A category that still has expenses stays.
-- They can create a subcategory by name on one of their categories, and it appears under that category only.
-- They can update a subcategory's name after clicking Edit. Saving its current name is allowed. A name that category already uses on another subcategory is shown on the row and is not saved.
+- They can create a subcategory by name and one of the twelve pill colors on one of their categories, and it appears under that category in that color.
+- They can update a subcategory's name and color after clicking Edit. Saving its current name is allowed. A name that category already uses on another subcategory is shown on the row and is not saved.
+- A subcategory color is used for that subcategory's slice on the category rings.
 - A subcategory cannot be created without a category, and it cannot be attached to another user's category.
 - A guest who opens Categories is redirected to login.
 - An empty name, a missing or unknown color, a duplicate category name for that user, or a duplicate subcategory name inside the same category is shown on the form and is not saved.

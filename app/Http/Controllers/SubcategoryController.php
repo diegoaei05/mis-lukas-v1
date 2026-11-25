@@ -17,7 +17,7 @@ class SubcategoryController extends Controller
      */
     public function store(StoreSubcategoryRequest $request, Category $category): RedirectResponse
     {
-        $category->subcategories()->create($request->safe()->only(['name']));
+        $category->subcategories()->create($request->safe()->only(['name', 'color']));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Subcategory created.')]);
 
@@ -29,7 +29,7 @@ class SubcategoryController extends Controller
      */
     public function update(UpdateSubcategoryRequest $request, Category $category, Subcategory $subcategory): RedirectResponse
     {
-        $subcategory->update($request->safe()->only(['name']));
+        $subcategory->update($request->safe()->only(['name', 'color']));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Subcategory updated.')]);
 

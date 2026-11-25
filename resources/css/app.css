@@ -72,6 +72,13 @@
     --color-category-blue: var(--category-blue);
     --color-category-gold: var(--category-gold);
     --color-category-red: var(--category-red);
+    --color-category-orange: var(--category-orange);
+    --color-category-teal: var(--category-teal);
+    --color-category-pink: var(--category-pink);
+    --color-category-indigo: var(--category-indigo);
+    --color-category-coral: var(--category-coral);
+    --color-category-cyan: var(--category-cyan);
+    --color-category-magenta: var(--category-magenta);
     --color-category-foreground: var(--category-foreground);
 }
 
@@ -122,6 +129,13 @@
     --category-blue: #7dc6fd;
     --category-gold: #efcb60;
     --category-red: #ff4343;
+    --category-orange: #ffb066;
+    --category-teal: #6dcec4;
+    --category-pink: #f4a4cc;
+    --category-indigo: #a8b0f5;
+    --category-coral: #ff9a8a;
+    --category-cyan: #7ad7ef;
+    --category-magenta: #e7a0dc;
     --category-foreground: #1f1f1f;
 }
 

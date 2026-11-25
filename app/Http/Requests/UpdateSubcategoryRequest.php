@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\CategoryColor;
 use App\Models\Category;
 use App\Models\Subcategory;
 use Closure;
@@ -9,6 +10,7 @@ use Illuminate\Auth\Access\Response;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 class UpdateSubcategoryRequest extends FormRequest
 {
@@ -77,6 +79,7 @@ class UpdateSubcategoryRequest extends FormRequest
                     }
                 },
             ],
+            'color' => ['required', Rule::enum(CategoryColor::class)],
         ];
     }
 }

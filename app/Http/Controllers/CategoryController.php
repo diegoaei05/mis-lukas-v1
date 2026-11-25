@@ -23,7 +23,7 @@ class CategoryController extends Controller
         $categories = $request->user()
             ->categories()
             ->with(['subcategories' => function ($query) {
-                $query->orderBy('name')->select(['id', 'category_id', 'name']);
+                $query->orderBy('name')->select(['id', 'category_id', 'name', 'color']);
             }])
             ->orderBy('name')
             ->get(['id', 'name', 'color'])
@@ -35,6 +35,7 @@ class CategoryController extends Controller
                     ->map(fn (Subcategory $subcategory): array => [
                         'id' => $subcategory->id,
                         'name' => $subcategory->name,
+                        'color' => $subcategory->color?->value,
                     ])
                     ->all(),
             ])
